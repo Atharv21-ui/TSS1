@@ -35,26 +35,37 @@ router.get('/:id', async (req: Request, res: Response) => {
   }
 });
 
-// Upload image (Admin Only)
-router.post('/upload', authenticateToken, requireAdmin, upload.single('image'), async (req: AuthRequest, res: Response) => {
-  try {
-    if (!req.file) {
-      return res.status(400).json({ message: 'No image file provided' });
-    }
-    // The Cloudinary URL is in req.file.path
-    res.json({ url: req.file.path, message: 'Image uploaded successfully' });
-  } catch (error: any) {
-    res.status(500).json({ message: 'Error uploading image', error: error.message });
-  }
-});
+// Upload image standalone route removed in favor of unified pipeline
 
 // Create product (Admin Only)
-router.post('/', authenticateToken, requireAdmin, async (req: AuthRequest, res: Response) => {
+router.post('/', authenticateToken, requireAdmin, upload.single('image'), async (req: AuthRequest, res: Response) => {
   try {
-    const { title, price, src, badge, description, category, stock, specs } = req.body;
+    const { title, price, badge, description, category, stock } = req.body;
+    let { src, specs } = req.body;
 
     if (!title || !price || !category) {
       return res.status(400).json({ message: 'Title, price, and category are required' });
+    }
+
+    // If an image was uploaded, grab the Cloudinary URL
+    if (req.file) {
+      src = req.file.path;
+    }
+
+    if (!src) {
+      return res.status(400).json({ message: 'Image source or file is required' });
+    }
+
+    // Parse specs if it's sent as a string from FormData
+    let parsedSpecs = [];
+    if (typeof specs === 'string') {
+      try {
+        parsedSpecs = JSON.parse(specs);
+      } catch (e) {
+        parsedSpecs = [];
+      }
+    } else if (Array.isArray(specs)) {
+      parsedSpecs = specs;
     }
 
     const product = new Product({
@@ -65,7 +76,7 @@ router.post('/', authenticateToken, requireAdmin, async (req: AuthRequest, res: 
       description,
       category: category.toLowerCase(),
       stock: stock !== undefined ? Number(stock) : 10,
-      specs: specs || []
+      specs: parsedSpecs
     });
 
     await product.save();
@@ -76,13 +87,31 @@ router.post('/', authenticateToken, requireAdmin, async (req: AuthRequest, res: 
 });
 
 // Update product (Admin Only)
-router.put('/:id', authenticateToken, requireAdmin, async (req: AuthRequest, res: Response) => {
+router.put('/:id', authenticateToken, requireAdmin, upload.single('image'), async (req: AuthRequest, res: Response) => {
   try {
-    const { title, price, src, badge, description, category, stock, specs } = req.body;
+    const { title, price, badge, description, category, stock } = req.body;
+    let { src, specs } = req.body;
 
     const product = await Product.findById(req.params.id);
     if (!product) {
       return res.status(404).json({ message: 'Product not found' });
+    }
+
+    // If an image was uploaded, grab the Cloudinary URL
+    if (req.file) {
+      src = req.file.path;
+    }
+
+    // Parse specs if it's sent as a string from FormData
+    let parsedSpecs = product.specs;
+    if (specs) {
+      if (typeof specs === 'string') {
+        try {
+          parsedSpecs = JSON.parse(specs);
+        } catch (e) {}
+      } else if (Array.isArray(specs)) {
+        parsedSpecs = specs;
+      }
     }
 
     if (title) product.title = title;
@@ -92,7 +121,7 @@ router.put('/:id', authenticateToken, requireAdmin, async (req: AuthRequest, res
     if (description !== undefined) product.description = description;
     if (category) product.category = category.toLowerCase();
     if (stock !== undefined) product.stock = Number(stock);
-    if (specs) product.specs = specs;
+    product.specs = parsedSpecs;
 
     await product.save();
     res.json(product);

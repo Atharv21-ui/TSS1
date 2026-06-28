@@ -107,50 +107,50 @@ export default function AdminDashboard() {
     const filteredSpecs = specs.filter(s => s.label.trim() && s.value.trim());
     
     try {
-      let finalSrc = src;
+      setUploadingImage(true);
+      const formData = new FormData();
+      
+      formData.append('title', title);
+      formData.append('price', price.endsWith('$') ? price : `${price}$`);
+      formData.append('category', category);
+      formData.append('stock', String(parseInt(stock) || 0));
+      
+      if (badge) formData.append('badge', badge);
+      if (description) formData.append('description', description);
+      
+      // Send specs as a JSON string so the backend can parse it
+      formData.append('specs', JSON.stringify(filteredSpecs));
 
+      // Either attach the file, or the fallback URL
       if (imageFile) {
-        setUploadingImage(true);
-        const formData = new FormData();
         formData.append('image', imageFile);
-        
-        const uploadRes: any = await api.post('/products/upload', formData, {
-          headers: { 'Content-Type': 'multipart/form-data' }
-        });
-        
-        finalSrc = uploadRes.url;
-        setUploadingImage(false);
-      }
-
-      if (!finalSrc) {
+      } else if (src) {
+        formData.append('src', src);
+      } else {
         alert('Please provide an image URL or upload an image file');
+        setUploadingImage(false);
         return;
       }
 
-      const payload = {
-        title,
-        price: price.endsWith('$') ? price : `${price}$`,
-        src: finalSrc,
-        badge,
-        description,
-        category,
-        stock: parseInt(stock) || 0,
-        specs: filteredSpecs
-      };
-
       if (editingId) {
-        await api.put(`/products/${editingId}`, payload);
+        await api.put(`/products/${editingId}`, formData, {
+          headers: { 'Content-Type': 'multipart/form-data' }
+        });
         alert('Product updated successfully!');
       } else {
-        await api.post('/products', payload);
+        await api.post('/products', formData, {
+          headers: { 'Content-Type': 'multipart/form-data' }
+        });
         alert('Product added successfully!');
       }
+      
       resetForm();
       setActiveTab('products');
       fetchProducts();
     } catch (err: any) {
-      setUploadingImage(false);
       alert(err.message || 'Error saving product');
+    } finally {
+      setUploadingImage(false);
     }
   };
 
