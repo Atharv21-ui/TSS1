@@ -81,15 +81,7 @@ export default function AdminDashboard() {
   const [editingId, setEditingId] = useState<string | null>(null);
 
   // Orders State
-  const [orders, setOrders] = useState<Order[]>([
-    { id: 'TSS-9812', customer: 'Alex Rivera', email: 'alex@rivera.io', date: '2026-06-28', total: 1899, status: 'Processing', item: 'TSS PRO 16' },
-    { id: 'TSS-9745', customer: 'Elena Rostova', email: 'elena.r@cyber.ru', date: '2026-06-27', total: 2499, status: 'Shipped', item: 'TSS MONOLITH' },
-    { id: 'TSS-9612', customer: 'Marcus Vance', date: '2026-06-25', email: 'vance@neon.net', total: 899, status: 'Delivered', item: 'TSS PRINTMAX 3D' },
-    { id: 'TSS-9504', customer: 'Sora Takahashi', email: 'sora@tokyo.jp', date: '2026-06-24', total: 3999, status: 'Delivered', item: 'TSS QUANTUM 8K' },
-    { id: 'TSS-9411', customer: 'David Chen', email: 'dchen@silicon.edu', date: '2026-06-22', total: 199, status: 'Cancelled', item: 'TSS MECH KEYBOARD' },
-    { id: 'TSS-9388', customer: 'Zara Hayes', email: 'zara@hayes.org', date: '2026-06-20', total: 1299, status: 'Delivered', item: 'TSS GAMING 55"' },
-    { id: 'TSS-9250', customer: 'John Doe', email: 'johndoe@gmail.com', date: '2026-06-18', total: 1799, status: 'Shipped', item: 'TSS TOWER X' }
-  ]);
+  const [orders, setOrders] = useState<Order[]>([]);
 
   useEffect(() => {
     // Check if logged in user is admin
@@ -273,12 +265,12 @@ export default function AdminDashboard() {
     );
   }
 
-  // Calculated Stats based on Timeframe
+  // Calculated Stats based on Timeframe (Live Metrics)
   const timeframeConfig = {
-    '24h': { sales: 8490, orders: 4, visitors: 340, aov: 2122, trend: [1200, 3100, 1900, 4800, 3900, 8490] },
-    '7d': { sales: 24800, orders: 15, visitors: 1890, aov: 1653, trend: [8000, 12000, 10500, 17500, 14000, 22000, 24800] },
-    '30d': { sales: 94250, orders: 58, visitors: 7800, aov: 1625, trend: [45000, 52000, 49000, 68000, 61000, 82000, 75000, 94250] },
-    '12m': { sales: 840200, orders: 490, visitors: 94000, aov: 1714, trend: [40000, 55000, 48000, 69000, 65000, 72000, 89000, 81000, 95000, 102000, 98000, 120000] }
+    '24h': { sales: 0, orders: orders.length, visitors: 0, aov: 0, trend: [0, 0, 0, 0, 0, 0] },
+    '7d': { sales: 0, orders: orders.length, visitors: 0, aov: 0, trend: [0, 0, 0, 0, 0, 0, 0] },
+    '30d': { sales: 0, orders: orders.length, visitors: 0, aov: 0, trend: [0, 0, 0, 0, 0, 0, 0, 0] },
+    '12m': { sales: 0, orders: orders.length, visitors: 0, aov: 0, trend: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] }
   };
 
   const currentStats = timeframeConfig[timeframe];
@@ -516,22 +508,30 @@ export default function AdminDashboard() {
                 <div>
                   <h3 className="font-heading text-sm text-white tracking-wider uppercase mb-6">CATEGORY DISTRIBUTION</h3>
                   <div className="space-y-4">
-                    {[
-                      { name: 'Laptops', value: 45, color: '#00ccff' },
-                      { name: 'Desktops', value: 30, color: '#ff3366' },
-                      { name: 'LED TV', value: 15, color: '#9933ff' },
-                      { name: 'Accessories', value: 10, color: '#00ffcc' }
-                    ].map((cat) => (
-                      <div key={cat.name} className="space-y-1.5">
-                        <div className="flex justify-between text-xs font-semibold">
-                          <span className="text-zinc-400">{cat.name}</span>
-                          <span className="font-mono text-[#00ccff]">{cat.value}%</span>
-                        </div>
-                        <div className="h-1.5 w-full bg-zinc-900 rounded-full overflow-hidden">
-                          <div className="h-full rounded-full" style={{ width: `${cat.value}%`, backgroundColor: cat.color }} />
-                        </div>
-                      </div>
-                    ))}
+                    {(() => {
+                      const total = products.length || 1;
+                      const cats = [
+                        { name: 'Laptops', count: products.filter(p => p.category === 'laptops').length, color: '#00ccff' },
+                        { name: 'Desktops', count: products.filter(p => p.category === 'desktops').length, color: '#ff3366' },
+                        { name: 'LED TV', count: products.filter(p => p.category === 'led-tv').length, color: '#9933ff' },
+                        { name: 'Printers', count: products.filter(p => p.category === 'printers').length, color: '#ffaa00' },
+                        { name: 'Accessories', count: products.filter(p => p.category === 'accessories').length, color: '#00ffcc' }
+                      ];
+                      return cats.map((cat) => {
+                        const pct = Math.round((cat.count / total) * 100);
+                        return (
+                          <div key={cat.name} className="space-y-1.5">
+                            <div className="flex justify-between text-xs font-semibold">
+                              <span className="text-zinc-400">{cat.name}</span>
+                              <span className="font-mono text-[#00ccff]">{pct}%</span>
+                            </div>
+                            <div className="h-1.5 w-full bg-zinc-900 rounded-full overflow-hidden">
+                              <div className="h-full rounded-full" style={{ width: `${pct}%`, backgroundColor: cat.color }} />
+                            </div>
+                          </div>
+                        );
+                      });
+                    })()}
                   </div>
                 </div>
 
@@ -571,40 +571,48 @@ export default function AdminDashboard() {
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-zinc-900/50 text-sm">
-                      {orders.map((order) => (
-                        <tr key={order.id} className="hover:bg-white/[0.01] transition-colors group">
-                          <td className="p-4 font-mono font-bold text-white">{order.id}</td>
-                          <td className="p-4">
-                            <div className="font-semibold text-zinc-300">{order.customer}</div>
-                            <div className="text-[10px] text-zinc-500">{order.email}</div>
-                          </td>
-                          <td className="p-4 text-zinc-400">{order.item}</td>
-                          <td className="p-4 font-mono text-[#00ccff] font-bold">${order.total.toLocaleString()}</td>
-                          <td className="p-4">
-                            <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-heading font-bold border ${
-                              order.status === 'Delivered' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' :
-                              order.status === 'Shipped' ? 'bg-[#00ccff]/10 text-[#00ccff] border-[#00ccff]/20' :
-                              order.status === 'Processing' ? 'bg-amber-500/10 text-amber-400 border-amber-500/20' :
-                              'bg-red-500/10 text-red-400 border-red-500/20'
-                            }`}>
-                              {order.status}
-                            </span>
-                          </td>
-                          <td className="p-4 text-right relative">
-                            {/* Action to change status */}
-                            <select
-                              value={order.status}
-                              onChange={(e) => handleOrderStatusUpdate(order.id, e.target.value as Order['status'])}
-                              className="bg-zinc-900 border border-zinc-800 text-zinc-400 hover:text-white rounded px-2 py-1 text-xs focus:outline-none focus:border-[#00ccff] cursor-pointer"
-                            >
-                              <option value="Processing">Process</option>
-                              <option value="Shipped">Ship</option>
-                              <option value="Delivered">Deliver</option>
-                              <option value="Cancelled">Cancel</option>
-                            </select>
+                      {orders.length === 0 ? (
+                        <tr>
+                          <td colSpan={6} className="p-8 text-center text-zinc-500 font-mono text-xs">
+                            NO RECENT ORDERS RECORDED IN DATABASE
                           </td>
                         </tr>
-                      ))}
+                      ) : (
+                        orders.map((order) => (
+                          <tr key={order.id} className="hover:bg-white/[0.01] transition-colors group">
+                            <td className="p-4 font-mono font-bold text-white">{order.id}</td>
+                            <td className="p-4">
+                              <div className="font-semibold text-zinc-300">{order.customer}</div>
+                              <div className="text-[10px] text-zinc-500">{order.email}</div>
+                            </td>
+                            <td className="p-4 text-zinc-400">{order.item}</td>
+                            <td className="p-4 font-mono text-[#00ccff] font-bold">${order.total.toLocaleString()}</td>
+                            <td className="p-4">
+                              <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-heading font-bold border ${
+                                order.status === 'Delivered' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' :
+                                order.status === 'Shipped' ? 'bg-[#00ccff]/10 text-[#00ccff] border-[#00ccff]/20' :
+                                order.status === 'Processing' ? 'bg-amber-500/10 text-amber-400 border-amber-500/20' :
+                                'bg-red-500/10 text-red-400 border-red-500/20'
+                              }`}>
+                                {order.status}
+                              </span>
+                            </td>
+                            <td className="p-4 text-right relative">
+                              {/* Action to change status */}
+                              <select
+                                value={order.status}
+                                onChange={(e) => handleOrderStatusUpdate(order.id, e.target.value as Order['status'])}
+                                className="bg-zinc-900 border border-zinc-800 text-zinc-400 hover:text-white rounded px-2 py-1 text-xs focus:outline-none focus:border-[#00ccff] cursor-pointer"
+                              >
+                                <option value="Processing">Process</option>
+                                <option value="Shipped">Ship</option>
+                                <option value="Delivered">Deliver</option>
+                                <option value="Cancelled">Cancel</option>
+                              </select>
+                            </td>
+                          </tr>
+                        ))
+                      )}
                     </tbody>
                   </table>
                 </div>
@@ -616,26 +624,22 @@ export default function AdminDashboard() {
                 <div>
                   <h3 className="font-heading text-sm text-white tracking-wider uppercase mb-6">TOP PERFORMING HARDWARE</h3>
                   <div className="space-y-4">
-                    {[
-                      { name: 'TSS MONOLITH', sales: 42, rev: 104958, src: 'https://images.unsplash.com/photo-1587831990711-23ca6441447b?auto=format&fit=crop&q=80&w=600' },
-                      { name: 'TSS PRO 16', sales: 38, rev: 72162, src: 'https://images.unsplash.com/photo-1525547719571-a2d4ac8945e2?auto=format&fit=crop&q=80&w=600' },
-                      { name: 'TSS QUANTUM 8K', sales: 15, rev: 59985, src: 'https://images.unsplash.com/photo-1593359677879-a4bb92f829d1?auto=format&fit=crop&q=80&w=600' },
-                      { name: 'TSS BLADE X1', sales: 28, rev: 41972, src: 'https://images.unsplash.com/photo-1517336714731-489689fd1ca8?auto=format&fit=crop&q=80&w=600' }
-                    ].map((p, idx) => (
-                      <div key={p.name} className="flex items-center gap-4 group">
+                    {products.slice(0, 4).map((p, idx) => (
+                      <div key={p._id || p.id} className="flex items-center gap-4 group">
                         <span className="font-mono font-bold text-zinc-600 w-4">{idx + 1}</span>
-                        <img src={p.src} alt={p.name} className="w-10 h-10 object-cover rounded-lg border border-zinc-800" />
+                        <img src={p.src} alt={p.title} className="w-10 h-10 object-cover rounded-lg border border-zinc-800" />
                         <div className="flex-grow">
-                          <h4 className="text-xs font-semibold text-zinc-300 group-hover:text-[#00ccff] transition-colors">{p.name}</h4>
-                          <p className="text-[10px] text-zinc-500 font-mono mt-0.5">{p.sales} Units Sold</p>
+                          <h4 className="text-xs font-semibold text-zinc-300 group-hover:text-[#00ccff] transition-colors">{p.title}</h4>
+                          <p className="text-[10px] text-zinc-500 font-mono mt-0.5">{p.stock} Units In Stock</p>
                         </div>
                         <div className="text-right">
-                          <span className="text-xs font-mono font-bold text-[#00ccff]">${p.rev.toLocaleString()}</span>
+                          <span className="text-xs font-mono font-bold text-[#00ccff]">{p.price}</span>
                         </div>
                       </div>
                     ))}
                   </div>
                 </div>
+
               </div>
 
             </div>

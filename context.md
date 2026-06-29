@@ -149,3 +149,12 @@ g:/TSS/src/
 - **Current File Structure Changes:**
   - `[MODIFIED]` `backend/src/routes/products.ts`
 
+### 15. Cleared Mock Demo Data from CMS Admin Dashboard
+- **What happened:** Removed all hardcoded demo orders, mock revenue stats, static category distributions, and fake top-performing hardware arrays from `src/pages/AdminDashboard.tsx`.
+- **Changes in Frontend:**
+  - Initialized `orders` state as an empty array and added a clean fallback row in the transaction log when no orders exist.
+  - Reset `timeframeConfig` metrics (sales, visitors, AOV, trend lines) to zero.
+  - Dynamically calculated Category Distribution percentage bars and Top Performing Hardware directly from real Firestore products.
+- **Current File Structure Changes:**
+  - `[MODIFIED]` `src/pages/AdminDashboard.tsx`
+
