@@ -30,3 +30,14 @@
   - Revamped the products list table and quick inventory stock controller into high-contrast grid layouts with smooth hover scaling and transitions.
   - Cleaned up form organization, grouping input parameters logically.
 - **Current File Structure Changes:** No structural changes to files; `src/pages/AdminDashboard.tsx` was modified.
+
+### 5. Created Overall App Management & Analytics Dashboard
+- **What happened:** Implemented a comprehensive `OVERVIEW` dashboard tab inside the admin panel (`src/pages/AdminDashboard.tsx`) for high-level store analytics, sales tracking, and order fulfillment.
+- **Changes in `src/pages/AdminDashboard.tsx`:**
+  - Added a **Timeframe Selector** supporting `24h`, `7d`, `30d`, and `12m` intervals.
+  - Linked KPI cards (Total Revenue, Orders, Unique Visitors, Avg Order Value) to dynamically scale with the selected timeframe.
+  - Created a custom **SVG Revenue Velocity Trend Line Chart** with an animated glow and area fill.
+  - Added a **Category Distribution Matrix** tracking percentage sales across categories.
+  - Designed an interactive **Order Transaction Log** table that allows admins to view customer details and update order statuses (Processing, Shipped, Delivered, Cancelled) in real time.
+  - Integrated a **Top Performing Hardware** ledger tracking individual item revenue.
+- **Current File Structure Changes:** No structural changes to files; `src/pages/AdminDashboard.tsx` was modified.
