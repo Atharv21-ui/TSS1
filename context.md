@@ -169,3 +169,8 @@ g:/TSS/src/
   - `[NEW]` `src/components/SearchModal.tsx`, `src/components/ProductFilterSort.tsx`
   - `[MODIFIED]` `src/components/Layout.tsx`, `src/components/StaggeredMenu.tsx`, `src/config/firebase.ts`, `src/pages/Account.tsx`, `src/pages/Laptops.tsx`, `src/pages/Desktops.tsx`, `src/pages/Printers.tsx`, `src/pages/LedTv.tsx`, `src/pages/Accessories.tsx`
 
+### 17. Configured GitHub Repository Security Policy (SECURITY.md)
+- **What happened:** Created a formal `SECURITY.md` security policy in the root of the repository to enable GitHub's Security Policy feature.
+- **Current File Structure Changes:**
+  - `[NEW]` `SECURITY.md`
+
