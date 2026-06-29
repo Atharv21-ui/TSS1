@@ -174,3 +174,12 @@ g:/TSS/src/
 - **Current File Structure Changes:**
   - `[NEW]` `SECURITY.md`
 
+### 18. Resolved Dependabot Vulnerabilities (Cloudinary & UUID)
+- **What happened:** Fixed the 2 Dependabot security vulnerabilities reported in `backend/package-lock.json` (`cloudinary` arbitrary argument injection & `uuid` missing buffer bounds check).
+- **Changes in Backend:**
+  - Updated `cloudinary` dependency in `backend/package.json` from `^1.41.3` to `^2.10.0`.
+  - Added npm `overrides` in `backend/package.json` forcing sub-dependencies to use secure versions (`cloudinary` `^2.10.0` and `uuid` `^11.1.1`).
+  - Executed `npm install` and verified `npm audit` returned `found 0 vulnerabilities`.
+- **Current File Structure Changes:**
+  - `[MODIFIED]` `backend/package.json`, `backend/package-lock.json`
+
