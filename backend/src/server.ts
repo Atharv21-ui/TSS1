@@ -14,6 +14,7 @@ process.on('unhandledRejection', (err) => {
 
 import authRoutes from './routes/auth';
 import productRoutes from './routes/products';
+import usersRoutes from './routes/users';
 import { User } from './models/User';
 import { Product } from './models/Product';
 
@@ -48,6 +49,7 @@ app.use(cookieParser());
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/products', productRoutes);
+app.use('/api/users', usersRoutes);
 
 // Basic health check route
 app.get('/api/health', (req: Request, res: Response) => {

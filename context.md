@@ -4,6 +4,9 @@
 - Added a new `StoreInfo` component that integrates Google Maps iframe and live google reviews data.
 - **REDESIGNED**: Overhauled `StoreInfo` layout to fix UI issues. It now features a premium glassmorphic Store Location card with a 3D-filtered map, and a seamlessly infinite scrolling marquee carousel for the Google reviews. Added GSAP entrance animations.
 - Included the `StoreInfo` component in `Home.tsx` to render at the bottom of the home page.
+- Extracted the `/admin` route out of `<Layout>` in `App.tsx` so the dashboard spans the full screen without global constraints (footer/logo).
+- Added `isBanned` field to the User model and `GET /`, `PATCH /:id/ban` endpoints to a new `users.ts` route on the backend.
+- Added a new `CUSTOMERS` tab in the `AdminDashboard` to manage users and toggle their ban status.
 
 ## Current File Structure
 ```

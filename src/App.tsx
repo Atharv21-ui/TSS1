@@ -33,8 +33,8 @@ function App() {
           <Route path="faq" element={<Faq />} />
           <Route path="checkout" element={<Checkout />} />
           <Route path="account" element={<Account />} />
-          <Route path="admin" element={<AdminDashboard />} />
         </Route>
+        <Route path="/admin" element={<AdminDashboard />} />
       </Routes>
     </CartProvider>
   );

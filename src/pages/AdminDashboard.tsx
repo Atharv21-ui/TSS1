@@ -47,12 +47,22 @@ interface Order {
   item: string;
 }
 
+interface IUser {
+  _id: string;
+  name?: string;
+  email: string;
+  role: 'user' | 'admin';
+  isBanned?: boolean;
+  createdAt: string;
+}
+
 export default function AdminDashboard() {
   const navigate = useNavigate();
   const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
   const [products, setProducts] = useState<Product[]>([]);
+  const [users, setUsers] = useState<IUser[]>([]);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<'overview' | 'products' | 'inventory' | 'add'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'products' | 'inventory' | 'add' | 'customers'>('overview');
   const [timeframe, setTimeframe] = useState<'24h' | '7d' | '30d' | '12m'>('30d');
 
   // Form State
@@ -89,6 +99,7 @@ export default function AdminDashboard() {
         if (user && user.role === 'admin') {
           setIsAdmin(true);
           fetchProducts();
+          fetchUsers();
         } else {
           setIsAdmin(false);
           navigate('/account');
@@ -110,6 +121,15 @@ export default function AdminDashboard() {
       console.error('Error fetching products:', err);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchUsers = async () => {
+    try {
+      const data = await api.get<IUser[]>('/users');
+      setUsers(data);
+    } catch (err) {
+      console.error('Error fetching users:', err);
     }
   };
 
@@ -227,6 +247,21 @@ export default function AdminDashboard() {
     setOrders(prev => prev.map(o => o.id === orderId ? { ...o, status: nextStatus } : o));
   };
 
+  const handleToggleBan = async (id: string, currentStatus?: boolean) => {
+    if (!window.confirm(`Are you sure you want to ${currentStatus ? 'unban' : 'ban'} this user?`)) return;
+    try {
+      const res = await api.patch<{user: IUser}>(`/users/${id}/ban`, {});
+      if (res && res.user) {
+        setUsers(users.map(u => u._id === id ? { ...u, isBanned: res.user.isBanned } : u));
+      } else {
+        // Fallback optimistic update if response format differs
+        setUsers(users.map(u => u._id === id ? { ...u, isBanned: !currentStatus } : u));
+      }
+    } catch (err: any) {
+      alert(err.message || 'Error updating user status');
+    }
+  };
+
   if (isAdmin === null || loading) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-[#030303] text-white">
@@ -283,6 +318,9 @@ export default function AdminDashboard() {
             </div>
             <h1 className="font-heading text-4xl sm:text-5xl tracking-tight text-white mt-1">TSS SYSTEM CONTROL</h1>
             <p className="text-zinc-400 text-xs sm:text-sm mt-1">Global management overview, logistics tracking, and catalog indexing.</p>
+            <button onClick={() => navigate('/')} className="mt-4 text-[10px] text-zinc-500 hover:text-white font-heading tracking-widest uppercase border border-zinc-800 hover:border-zinc-500 px-3 py-1.5 rounded transition-colors flex items-center gap-2">
+              <Minus className="w-3 h-3" /> EXIT TO STOREFRONT
+            </button>
           </div>
 
           {/* Tab Selection */}
@@ -307,6 +345,13 @@ export default function AdminDashboard() {
             >
               <Sliders className="w-3.5 h-3.5" />
               INVENTORY
+            </button>
+            <button 
+              onClick={() => { resetForm(); setActiveTab('customers'); }}
+              className={`flex-1 lg:flex-initial flex items-center justify-center gap-2 px-5 py-2.5 rounded-lg text-xs font-heading font-semibold tracking-wider transition-all duration-300 ${activeTab === 'customers' ? 'bg-zinc-900 text-[#00ccff] shadow-[0_2px_10px_rgba(0,204,255,0.1)] border border-zinc-800' : 'text-zinc-400 hover:text-zinc-200'}`}
+            >
+              <Users className="w-3.5 h-3.5" />
+              CUSTOMERS
             </button>
             <button 
               onClick={() => { resetForm(); setActiveTab('add'); }}
@@ -736,6 +781,81 @@ export default function AdminDashboard() {
                       </td>
                     </tr>
                   ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+
+        {/* Tab: Customers List */}
+        {activeTab === 'customers' && (
+          <div className="relative bg-zinc-950/30 border border-zinc-900 rounded-3xl backdrop-blur-xl shadow-[0_20px_50px_rgba(0,0,0,0.5)] overflow-hidden">
+            <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-[#00ccff]/40 to-transparent" />
+            <div className="overflow-x-auto">
+              <table className="w-full text-left border-collapse">
+                <thead>
+                  <tr className="border-b border-zinc-900/80 bg-zinc-950/60 text-zinc-500 text-[10px] font-heading font-bold tracking-[0.2em] uppercase">
+                    <th className="p-5">USER ID</th>
+                    <th className="p-5">NAME / EMAIL</th>
+                    <th className="p-5">ROLE</th>
+                    <th className="p-5">JOINED DATE</th>
+                    <th className="p-5">STATUS</th>
+                    <th className="p-5 text-right">ACTIONS</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-zinc-900/50 text-sm">
+                  {users.length === 0 ? (
+                    <tr>
+                      <td colSpan={6} className="p-12 text-center text-zinc-500 font-heading tracking-widest text-xs uppercase">
+                        No users available in database.
+                      </td>
+                    </tr>
+                  ) : (
+                    users.map((user) => (
+                      <tr key={user._id} className="hover:bg-white/[0.015] transition-colors group">
+                        <td className="p-5 font-mono text-zinc-500 text-xs">
+                          {user._id.substring(0, 8)}...
+                        </td>
+                        <td className="p-5">
+                          <div className="font-semibold text-white group-hover:text-[#00ccff] transition-colors">{user.name || 'Anonymous User'}</div>
+                          <div className="text-[10px] text-zinc-500 mt-0.5">{user.email}</div>
+                        </td>
+                        <td className="p-5">
+                          <span className={`text-[9px] px-2 py-0.5 rounded-md font-heading uppercase font-bold tracking-wider border ${user.role === 'admin' ? 'bg-[#00ccff]/10 text-[#00ccff] border-[#00ccff]/20' : 'bg-zinc-900 text-zinc-400 border-zinc-800'}`}>
+                            {user.role}
+                          </span>
+                        </td>
+                        <td className="p-5 text-zinc-400 font-mono text-xs">
+                          {new Date(user.createdAt).toLocaleDateString()}
+                        </td>
+                        <td className="p-5">
+                          <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[10px] font-heading font-bold uppercase tracking-wider border ${
+                            user.isBanned 
+                              ? 'bg-red-500/10 text-red-500 border-red-500/20' 
+                              : 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
+                          }`}>
+                            <span className={`w-1.5 h-1.5 rounded-full ${user.isBanned ? 'bg-red-500' : 'bg-emerald-400'}`} />
+                            {user.isBanned ? 'BANNED' : 'ACTIVE'}
+                          </span>
+                        </td>
+                        <td className="p-5 text-right">
+                          <button 
+                            onClick={() => handleToggleBan(user._id, user.isBanned)}
+                            disabled={user.role === 'admin'}
+                            className={`px-3 py-1.5 rounded border text-xs font-heading font-bold transition-colors ${
+                              user.role === 'admin' 
+                                ? 'opacity-50 cursor-not-allowed bg-zinc-900 border-zinc-800 text-zinc-600'
+                                : user.isBanned
+                                  ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-500 hover:bg-emerald-500/20'
+                                  : 'bg-red-500/10 border-red-500/30 text-red-500 hover:bg-red-500/20'
+                            }`}
+                          >
+                            {user.role === 'admin' ? 'IMMUNE' : user.isBanned ? 'UNBAN' : 'BAN'}
+                          </button>
+                        </td>
+                      </tr>
+                    ))
+                  )}
                 </tbody>
               </table>
             </div>
