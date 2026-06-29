@@ -158,3 +158,14 @@ g:/TSS/src/
 - **Current File Structure Changes:**
   - `[MODIFIED]` `src/pages/AdminDashboard.tsx`
 
+### 16. Added Interactive Search Modal, Product Filtering/Sorting, and Google Sign-In
+- **What happened:** Implemented an interactive global search modal triggered by clicking the TSS logo or search bar, added sorting/filtering bars across all 5 category pages, and added Google Sign-In authentication.
+- **Changes in Frontend:**
+  - Added `src/components/SearchModal.tsx` for real-time live search matching titles, categories, descriptions, and specifications.
+  - Connected `SearchModal` trigger to TSS logo in `StaggeredMenu.tsx` and header search bar in `Layout.tsx`.
+  - Added `src/components/ProductFilterSort.tsx` and integrated it into `Laptops.tsx`, `Desktops.tsx`, `Printers.tsx`, `LedTv.tsx`, and `Accessories.tsx` supporting price sorting and stock filtering.
+  - Exported `googleProvider` from `src/config/firebase.ts` and added Google Sign-In buttons to `src/pages/Account.tsx`.
+- **Current File Structure Changes:**
+  - `[NEW]` `src/components/SearchModal.tsx`, `src/components/ProductFilterSort.tsx`
+  - `[MODIFIED]` `src/components/Layout.tsx`, `src/components/StaggeredMenu.tsx`, `src/config/firebase.ts`, `src/pages/Account.tsx`, `src/pages/Laptops.tsx`, `src/pages/Desktops.tsx`, `src/pages/Printers.tsx`, `src/pages/LedTv.tsx`, `src/pages/Accessories.tsx`
+

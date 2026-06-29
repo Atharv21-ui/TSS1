@@ -1,11 +1,15 @@
 import { useEffect, useState } from 'react';
 import gsap from 'gsap';
 import { ExpandableCardGrid } from '../components/ExpandableCard';
+import ProductFilterSort from '../components/ProductFilterSort';
+import type { SortOption, FilterOption } from '../components/ProductFilterSort';
 import { api } from '../lib/api';
 
 export default function Laptops() {
   const [products, setProducts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [sortBy, setSortBy] = useState<SortOption>('featured');
+  const [filterBy, setFilterBy] = useState<FilterOption>('all');
 
   useEffect(() => {
     // Reset accent color to red for laptops page
@@ -31,6 +35,25 @@ export default function Laptops() {
     loadProducts();
   }, []);
 
+  const processedProducts = products
+    .filter(p => filterBy === 'all' || p.stock > 0)
+    .sort((a, b) => {
+      if (sortBy === 'price-asc') {
+        const pA = parseFloat(a.price.replace(/[^0-9.]/g, '')) || 0;
+        const pB = parseFloat(b.price.replace(/[^0-9.]/g, '')) || 0;
+        return pA - pB;
+      }
+      if (sortBy === 'price-desc') {
+        const pA = parseFloat(a.price.replace(/[^0-9.]/g, '')) || 0;
+        const pB = parseFloat(b.price.replace(/[^0-9.]/g, '')) || 0;
+        return pB - pA;
+      }
+      if (sortBy === 'name-asc') {
+        return (a.title || '').localeCompare(b.title || '');
+      }
+      return 0;
+    });
+
   return (
     <div className="page-container">
       <div className="page-header">
@@ -45,7 +68,16 @@ export default function Laptops() {
           RETRIEVING SPECIFICATIONS...
         </div>
       ) : (
-        <ExpandableCardGrid products={products} />
+        <>
+          <ProductFilterSort
+            sortBy={sortBy}
+            onSortChange={setSortBy}
+            filterBy={filterBy}
+            onFilterChange={setFilterBy}
+            totalResults={processedProducts.length}
+          />
+          <ExpandableCardGrid products={processedProducts} />
+        </>
       )}
     </div>
   );

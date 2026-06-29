@@ -1,17 +1,26 @@
+import { useState } from 'react';
 import { Outlet, NavLink } from 'react-router-dom';
 import StaggeredMenu from './StaggeredMenu';
 import { GooeyInput } from './ui/gooey-input';
 import FloatingInput from './FloatingInput';
+import SearchModal from './SearchModal';
 
 export default function Layout() {
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
 
   return (
     <div className="app-container">
+      {/* Global Search Modal */}
+      <SearchModal isOpen={isSearchOpen} onClose={() => setIsSearchOpen(false)} />
+
       {/* Global deep-space vector canvas */}
       <div className="vector-lines"></div>
 
       {/* Global Search Bar */}
-      <div style={{ position: 'fixed', top: '25px', left: '40px', zIndex: 100 }}>
+      <div 
+        onClick={() => setIsSearchOpen(true)}
+        style={{ position: 'fixed', top: '25px', left: '40px', zIndex: 100, cursor: 'pointer' }}
+      >
         <GooeyInput placeholder="Search TSS Hardware..." />
       </div>
       
@@ -19,6 +28,7 @@ export default function Layout() {
       <StaggeredMenu
         position="right"
         isFixed={true}
+        onLogoClick={() => setIsSearchOpen(true)}
         items={[
           { label: 'Home', ariaLabel: 'Go to home', link: '/' },
           { label: 'Laptops', ariaLabel: 'Shop laptops', link: '/laptops' },
