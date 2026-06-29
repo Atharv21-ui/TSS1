@@ -354,6 +354,12 @@ app.get(/(.*)/, (req: Request, res: Response) => {
 });
 
 // Connect to MongoDB
+// Start Server immediately so Railway health checks pass, regardless of DB status
+app.listen(Number(PORT), '0.0.0.0', () => {
+  console.log(`TSS Backend server running on port ${PORT}`);
+});
+
+// Connect to MongoDB in the background
 mongoose.connect(MONGODB_URI)
   .then(async () => {
     console.log('Connected to MongoDB Atlas successfully.');
@@ -362,10 +368,4 @@ mongoose.connect(MONGODB_URI)
   .catch(err => {
     console.error('MongoDB connection error:', err);
     console.error('SERVER RUNNING WITHOUT DATABASE. API calls will fail until DB is fixed.');
-  })
-  .finally(() => {
-    // Start Server always, even if DB fails, to prevent Railway crash loops
-    app.listen(Number(PORT), '0.0.0.0', () => {
-      console.log(`TSS Backend server running on port ${PORT}`);
-    });
   });
