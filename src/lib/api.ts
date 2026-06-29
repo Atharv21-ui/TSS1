@@ -1,4 +1,4 @@
-const API_BASE = import.meta.env.VITE_API_URL || `http://${window.location.hostname}:5000/api`;
+const API_BASE = import.meta.env.VITE_API_URL || '/api';
 
 async function request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
   const headers: Record<string, string> = {

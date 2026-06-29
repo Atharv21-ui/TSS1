@@ -37,7 +37,7 @@ app.use(cors({
     
     // Check if origin matches allowed patterns
     const isLocalIP = origin.includes('192.168.') || origin.includes('10.') || origin.includes('172.');
-    if (allowedOrigins.indexOf(origin) !== -1 || origin.includes('localhost') || isLocalIP || origin.includes('netlify.app')) {
+    if (allowedOrigins.indexOf(origin) !== -1 || origin.includes('localhost') || isLocalIP || origin.includes('netlify.app') || origin.includes('railway.app')) {
       callback(null, true);
     } else {
       callback(new Error('Not allowed by CORS'));
@@ -352,8 +352,8 @@ mongoose.connect(MONGODB_URI)
     await seedDatabase();
     
     // Start Server only after DB connection
-    app.listen(PORT, () => {
-      console.log(`TSS Backend server running on http://localhost:${PORT}`);
+    app.listen(Number(PORT), '0.0.0.0', () => {
+      console.log(`TSS Backend server running on port ${PORT}`);
     });
   })
   .catch(err => {
