@@ -1,4 +1,5 @@
 import express, { Request, Response } from 'express';
+import path from 'path';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import mongoose from 'mongoose';
@@ -344,6 +345,13 @@ const seedDatabase = async () => {
     console.error('Error seeding database:', error);
   }
 };
+
+// Serve frontend static files in production
+app.use(express.static(path.join(__dirname, '../../dist')));
+
+app.get('*', (req: Request, res: Response) => {
+  res.sendFile(path.join(__dirname, '../../dist/index.html'));
+});
 
 // Connect to MongoDB
 mongoose.connect(MONGODB_URI)
