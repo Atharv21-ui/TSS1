@@ -2,20 +2,20 @@ import { db } from './src/config/firebase';
 
 async function testConnection() {
   try {
-    console.log('Testing Firestore connection...');
-    const snapshot = await db.collection('products').limit(1).get();
+    console.log('Testing Firestore laptops category query...');
+    const snapshot = await db.collection('products').where('category', '==', 'laptops').get();
     
     if (snapshot.empty) {
-      console.log('Successfully connected to Firestore, but the "products" collection is empty.');
+      console.log('No laptops found in products collection.');
     } else {
-      console.log('Successfully connected to Firestore! Found document in "products":');
+      console.log(`Successfully found ${snapshot.size} laptops in Firestore:`);
       snapshot.forEach(doc => {
-        console.log(doc.id, '=>', doc.data());
+        console.log('-', doc.data().title);
       });
     }
     process.exit(0);
   } catch (error) {
-    console.error('Error connecting to Firestore:', error);
+    console.error('Error querying laptops from Firestore:', error);
     process.exit(1);
   }
 }

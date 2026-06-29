@@ -15,9 +15,6 @@ router.get('/', async (req: Request, res: Response) => {
     if (category) {
       query = query.where('category', '==', String(category).toLowerCase());
     }
-    
-    // Sort by createdAt descending (requires a composite index if filtered by category)
-    query = query.orderBy('createdAt', 'desc');
 
     const snapshot = await query.get();
     const products = snapshot.docs.map(doc => ({
@@ -25,6 +22,13 @@ router.get('/', async (req: Request, res: Response) => {
       id: doc.id, // Keep both for compatibility
       ...doc.data()
     }));
+    
+    // Sort in memory by createdAt descending to avoid requiring Firestore composite indexes
+    products.sort((a: any, b: any) => {
+      const aTime = a.createdAt?.toDate ? a.createdAt.toDate().getTime() : (a.createdAt?._seconds ? a.createdAt._seconds * 1000 : 0);
+      const bTime = b.createdAt?.toDate ? b.createdAt.toDate().getTime() : (b.createdAt?._seconds ? b.createdAt._seconds * 1000 : 0);
+      return bTime - aTime;
+    });
     
     res.json(products);
   } catch (error: any) {

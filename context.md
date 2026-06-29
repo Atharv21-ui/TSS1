@@ -142,3 +142,10 @@ g:/TSS/src/
 - **Current File Structure Changes:**
   - `[MODIFIED]` `.github/workflows/deploy.yml`
 
+### 14. Fixed Empty Category Pages (Laptops, Accessories, etc.)
+- **What happened:** Fixed a 500 server error occurring on category filtered product requests (`/api/products?category=...`). The backend previously attempted to sort using `.orderBy('createdAt', 'desc')` within Firestore, which fails when combined with `.where()` equality filters unless a manual composite index is configured in Google Cloud Console.
+- **Changes in Backend:**
+  - Updated `backend/src/routes/products.ts` to perform descending timestamp sorting in memory after fetching records, eliminating the need for Firestore composite indexes.
+- **Current File Structure Changes:**
+  - `[MODIFIED]` `backend/src/routes/products.ts`
+
