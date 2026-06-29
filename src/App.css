@@ -857,9 +857,15 @@
 }
 
 /* --- PREMIUM STORE INFO SECTION --- */
+.store-info-section {
+  background: transparent !important;
+  border-top: none !important;
+}
+
 .store-card-premium {
-  background: rgba(10, 10, 15, 0.8);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(var(--accent-color-rgb), 0.05);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(var(--accent-color-rgb), 0.2);
   border-radius: 20px;
   overflow: hidden;
   box-shadow: 0 30px 60px rgba(0, 0, 0, 0.6), 0 0 40px rgba(var(--accent-color-rgb), 0.15);
@@ -1059,4 +1065,89 @@
   font-size: 14px;
   line-height: 1.6;
   font-style: italic;
+}
+
+/* --- MOBILE RESPONSIVENESS --- */
+@media (max-width: 1200px) {
+  .categories-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .bento-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .bento-item.large {
+    grid-column: span 1;
+    grid-row: span 1;
+  }
+  .footer {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .section {
+    padding: 60px 20px;
+  }
+  .categories-grid {
+    grid-template-columns: 1fr;
+  }
+  .bento-grid {
+    grid-template-columns: 1fr;
+  }
+  .footer {
+    grid-template-columns: 1fr;
+    text-align: center;
+    gap: 40px;
+  }
+  .footer-col {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  .footer-col ul {
+    padding: 0;
+  }
+  .hero .title {
+    font-size: 2.5rem;
+  }
+  .hero .price {
+    font-size: 3rem;
+  }
+  .thumbnail-navigation {
+    flex-direction: row;
+    bottom: 20px;
+    right: 50%;
+    transform: translateX(50%);
+    top: auto;
+    gap: 15px;
+  }
+  .thumbnail {
+    width: 60px;
+    height: 40px;
+  }
+  .info-panel {
+    align-items: flex-start;
+    text-align: left;
+    margin-top: 100px;
+  }
+  .ctas {
+    flex-direction: column;
+    width: 100%;
+  }
+  .btn-solid, .btn-outline {
+    width: 100%;
+    text-align: center;
+  }
+  .section-title {
+    font-size: 2rem;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+  .section-title::before {
+    display: none;
+  }
+  .marquee-content {
+    font-size: 1.5rem;
+  }
 }

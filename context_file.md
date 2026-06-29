@@ -7,6 +7,10 @@
 - Extracted the `/admin` route out of `<Layout>` in `App.tsx` so the dashboard spans the full screen without global constraints (footer/logo).
 - Added `isBanned` field to the User model and `GET /`, `PATCH /:id/ban` endpoints to a new `users.ts` route on the backend.
 - Added a new `CUSTOMERS` tab in the `AdminDashboard` to manage users and toggle their ban status.
+- **ADDRESS CAPTURE**: Updated `Account.tsx` registration form to capture the user's `address`, saved securely to the backend on sign-up.
+- **SMART CHECKOUT**: Updated `Checkout.tsx` to fetch the logged-in user profile, automatically pre-fill the saved `address`, and offer dynamic Payment Channels (Credit Card, Saved Card, COD, UPI). Successfully completing checkout on a new card securely saves the card number and expiry to the user's account for future auto-fill, strictly excluding the CVV.
+- **REVIEWS UPDATE**: Purged mock reviews from `StoreInfo.tsx` and updated the marquee to strictly feature authentic 5-star Google Reviews.
+- **MOBILE RESPONSIVENESS**: Injected comprehensive media queries into `App.css` to optimize grids, layout paddings, and typography for mobile screens (`max-width: 768px`) while keeping all GSAP animations and UI effects fully intact. Also updated the `StoreInfo` section background to a seamless dynamic tinted glassmorphism.
 
 ## Current File Structure
 ```

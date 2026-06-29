@@ -15,30 +15,6 @@ const reviews = [
     time: '2 months ago',
     rating: 5,
     text: 'Best service ever Charge Jaroor lete hai but properly solution dete hai thank you 🙏🏻 …',
-  },
-  {
-    name: 'priyanka diodia',
-    time: '6 years ago',
-    rating: 5,
-    text: 'Fast response and quality full best work, thank you Technical server s....✌️',
-  },
-  {
-    name: 'NITIN KUMAR',
-    time: '5 years ago',
-    rating: 5,
-    text: 'Very Good Service Centre and computer shop cheap and best computers.',
-  },
-  {
-    name: 'Royal Sahab',
-    time: '4 years ago',
-    rating: 5,
-    text: 'Best technical support And very knowledgeable staff.',
-  },
-  {
-    name: 'Tauseef Khan',
-    time: '5 years ago',
-    rating: 1,
-    text: 'Worst Store ever visited..!! I would prefer to buy from footpath or from roadside rather visiting there..',
   }
 ];
 
@@ -134,8 +110,8 @@ export default function StoreInfo() {
         
         <div className="reviews-marquee-container">
           <div className="reviews-track" ref={trackRef}>
-            {/* Double the array for seamless looping */}
-            {[...reviews, ...reviews].map((review, i) => (
+            {/* Multiply the array for seamless looping */}
+            {[...reviews, ...reviews, ...reviews, ...reviews, ...reviews, ...reviews].map((review, i) => (
               <div key={i} className="review-card-premium">
                 <div className="review-card-header">
                   <div className="review-avatar font-heading">
