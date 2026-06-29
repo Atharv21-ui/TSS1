@@ -45,4 +45,30 @@ router.patch('/:id/ban', authenticateToken, requireAdmin, async (req: AuthReques
   }
 });
 
+// Update user payment info (Self)
+router.patch('/me/payment', authenticateToken, async (req: AuthRequest, res: Response) => {
+  try {
+    const { cardNumber, expiry } = req.body;
+    
+    if (!req.user) {
+      return res.status(401).json({ message: 'Unauthorized' });
+    }
+
+    const user = await User.findById(req.user.id);
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    user.savedPaymentMethod = { cardNumber, expiry };
+    await user.save();
+
+    res.json({
+      message: 'Payment method saved successfully',
+      savedPaymentMethod: user.savedPaymentMethod
+    });
+  } catch (error: any) {
+    res.status(500).json({ message: 'Server error saving payment method', error: error.message });
+  }
+});
+
 export default router;

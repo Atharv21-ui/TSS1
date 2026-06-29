@@ -28,7 +28,7 @@ const issueTokenAndCookie = (res: Response, user: any) => {
 // Register User
 router.post('/register', async (req: Request, res: Response) => {
   try {
-    const { name, email, password } = req.body;
+    const { name, email, password, address } = req.body;
 
     if (!email || !password) {
       return res.status(400).json({ message: 'Email and password are required' });
@@ -47,7 +47,8 @@ router.post('/register', async (req: Request, res: Response) => {
       name,
       email,
       password: hashedPassword,
-      role: 'user'
+      role: 'user',
+      address
     });
 
     await user.save();
@@ -61,7 +62,9 @@ router.post('/register', async (req: Request, res: Response) => {
         id: user._id,
         name: user.name,
         email: user.email,
-        role: user.role
+        role: user.role,
+        address: user.address,
+        savedPaymentMethod: user.savedPaymentMethod
       }
     });
   } catch (error: any) {
@@ -102,7 +105,9 @@ router.post('/login', async (req: Request, res: Response) => {
         id: user._id,
         name: user.name,
         email: user.email,
-        role: user.role
+        role: user.role,
+        address: user.address,
+        savedPaymentMethod: user.savedPaymentMethod
       }
     });
   } catch (error: any) {

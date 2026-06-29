@@ -11,6 +11,11 @@ interface UserProfile {
   name?: string;
   email: string;
   role: 'user' | 'admin';
+  address?: string;
+  savedPaymentMethod?: {
+    cardNumber: string;
+    expiry: string;
+  };
   createdAt?: string;
 }
 
@@ -22,14 +27,11 @@ export default function Account() {
   const [activeTab, setActiveTab] = useState<'profile' | 'orders' | 'settings'>('profile');
   
   // Interactive Settings State
-  const [paymentMethods, setPaymentMethods] = useState(['•••• •••• •••• 4242 (Visa)']);
   const [notifications, setNotifications] = useState({ order: true, marketing: false });
 
   const handleEditProfile = () => alert('Profile editing mode activated. (Implementation pending)');
   const handleTrackOrder = (orderId: string) => alert(`Connecting to logistics provider...\nOrder ${orderId} Status: Out for Delivery in Neo San Francisco`);
   const handleInvoice = (orderId: string) => alert(`Downloading PDF Invoice for ${orderId}...`);
-  const handleRemovePayment = (method: string) => setPaymentMethods(prev => prev.filter(p => p !== method));
-  const handleAddPayment = () => setPaymentMethods(prev => [...prev, `•••• •••• •••• ${Math.floor(1000 + Math.random() * 9000)} (Mastercard)`]);  
   // Login Form State
   const [loginEmail, setLoginEmail] = useState('');
   const [loginPassword, setLoginPassword] = useState('');
@@ -38,6 +40,7 @@ export default function Account() {
   const [regName, setRegName] = useState('');
   const [regEmail, setRegEmail] = useState('');
   const [regPassword, setRegPassword] = useState('');
+  const [regAddress, setRegAddress] = useState('');
 
   const avatarRef = useRef<HTMLImageElement>(null);
   const infoRef = useRef<HTMLDivElement>(null);
@@ -108,7 +111,8 @@ export default function Account() {
       const res: any = await api.post('/auth/register', {
         name: regName,
         email: regEmail,
-        password: regPassword
+        password: regPassword,
+        address: regAddress
       });
       setUser(res.user);
       setIsLoggedIn(true);
@@ -134,6 +138,7 @@ export default function Account() {
     setRegName('');
     setRegEmail('');
     setRegPassword('');
+    setRegAddress('');
   };
 
   // If not logged in, render authentication forms
@@ -199,6 +204,14 @@ export default function Account() {
                 type="password" 
                 value={regPassword} 
                 onChange={(e) => setRegPassword(e.target.value)} 
+                required 
+                bgContext="#0a0a0a" 
+              />
+              <FloatingInput 
+                label="DELIVERY ADDRESS" 
+                type="text" 
+                value={regAddress} 
+                onChange={(e) => setRegAddress(e.target.value)} 
                 required 
                 bgContext="#0a0a0a" 
               />
@@ -325,7 +338,7 @@ export default function Account() {
                 </div>
                 <div>
                   <label className="text-muted" style={{ fontSize: '11px', textTransform: 'uppercase', letterSpacing: '1px' }}>Default Shipping</label>
-                  <p style={{ fontSize: '16px', marginTop: '5px', lineHeight: '1.5' }}>101 Silicon Avenue<br/>Neo San Francisco, CA 94107</p>
+                  <p style={{ fontSize: '16px', marginTop: '5px', lineHeight: '1.5' }}>{user?.address || 'No address stored'}</p>
                 </div>
                 <div>
                   <label className="text-muted" style={{ fontSize: '11px', textTransform: 'uppercase', letterSpacing: '1px' }}>Security Status</label>
@@ -411,13 +424,16 @@ export default function Account() {
 
                 <div style={{ borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: '30px' }}>
                   <h4 style={{ fontSize: '14px', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '15px', color: 'var(--accent-color)' }}>Payment Channels</h4>
-                  {paymentMethods.map(method => (
-                    <div key={method} style={{ background: '#111', padding: '15px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.05)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
-                      <span>{method}</span>
-                      <button onClick={() => handleRemovePayment(method)} style={{ background: 'none', border: 'none', color: '#ff3333', cursor: 'pointer', fontSize: '12px', textTransform: 'uppercase' }}>Remove</button>
+                  {user?.savedPaymentMethod ? (
+                    <div style={{ background: '#111', padding: '15px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.05)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+                      <span>•••• •••• •••• {user.savedPaymentMethod.cardNumber.slice(-4)} (Exp: {user.savedPaymentMethod.expiry})</span>
+                      <button style={{ background: 'none', border: 'none', color: '#ff3333', cursor: 'pointer', fontSize: '12px', textTransform: 'uppercase' }}>Remove</button>
                     </div>
-                  ))}
-                  <button onClick={handleAddPayment} style={{ background: 'none', border: 'none', color: 'var(--accent-color)', cursor: 'pointer', fontSize: '12px', textTransform: 'uppercase', marginTop: '15px', letterSpacing: '1px' }}>+ Add Payment Method</button>
+                  ) : (
+                    <div style={{ background: '#111', padding: '15px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.05)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+                      <span className="text-zinc-500">No saved payment methods. Add one during checkout.</span>
+                    </div>
+                  )}
                 </div>
               </div>
             </>

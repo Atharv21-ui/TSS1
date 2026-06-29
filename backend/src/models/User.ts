@@ -6,6 +6,11 @@ export interface IUser extends Document {
   password?: string;
   role: 'user' | 'admin';
   isBanned?: boolean;
+  address?: string;
+  savedPaymentMethod?: {
+    cardNumber: string;
+    expiry: string;
+  };
   createdAt: Date;
   updatedAt: Date;
 }
@@ -29,6 +34,14 @@ const userSchema = new Schema<IUser>(
     isBanned: {
       type: Boolean,
       default: false
+    },
+    address: {
+      type: String,
+      trim: true
+    },
+    savedPaymentMethod: {
+      cardNumber: { type: String },
+      expiry: { type: String }
     }
   },
   { timestamps: true }
