@@ -35,7 +35,9 @@ app.use(cors({
     // Allow requests with no origin (like mobile apps or curl requests)
     if (!origin) return callback(null, true);
     
-    if (allowedOrigins.indexOf(origin) !== -1 || origin.includes('localhost') || origin.includes('netlify.app')) {
+    // Check if origin matches allowed patterns
+    const isLocalIP = origin.includes('192.168.') || origin.includes('10.') || origin.includes('172.');
+    if (allowedOrigins.indexOf(origin) !== -1 || origin.includes('localhost') || isLocalIP || origin.includes('netlify.app')) {
       callback(null, true);
     } else {
       callback(new Error('Not allowed by CORS'));
