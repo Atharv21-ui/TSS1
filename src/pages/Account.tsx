@@ -21,6 +21,15 @@ export default function Account() {
   const [authMode, setAuthMode] = useState<'login' | 'register'>('login');
   const [activeTab, setActiveTab] = useState<'profile' | 'orders' | 'settings'>('profile');
   
+  // Interactive Settings State
+  const [paymentMethods, setPaymentMethods] = useState(['•••• •••• •••• 4242 (Visa)']);
+  const [notifications, setNotifications] = useState({ order: true, marketing: false });
+
+  const handleEditProfile = () => alert('Profile editing mode activated. (Implementation pending)');
+  const handleTrackOrder = (orderId: string) => alert(`Connecting to logistics provider...\nOrder ${orderId} Status: Out for Delivery in Neo San Francisco`);
+  const handleInvoice = (orderId: string) => alert(`Downloading PDF Invoice for ${orderId}...`);
+  const handleRemovePayment = (method: string) => setPaymentMethods(prev => prev.filter(p => p !== method));
+  const handleAddPayment = () => setPaymentMethods(prev => [...prev, `•••• •••• •••• ${Math.floor(1000 + Math.random() * 9000)} (Mastercard)`]);  
   // Login Form State
   const [loginEmail, setLoginEmail] = useState('');
   const [loginPassword, setLoginPassword] = useState('');
@@ -327,7 +336,7 @@ export default function Account() {
               </div>
               
               <div className="stagger-text flex gap-4" style={{ marginTop: '40px' }}>
-                <ArrowButton text="EDIT PROFILE" />
+                <ArrowButton text="EDIT PROFILE" onClick={handleEditProfile} />
                 
                 {user?.role === 'admin' && (
                   <button 
@@ -359,7 +368,7 @@ export default function Account() {
                   </div>
                   <div style={{ textAlign: 'right' }}>
                     <div style={{ fontWeight: 'bold', marginBottom: '10px' }}>$1,499.00</div>
-                    <AnimatedButton text="TRACK" className="outline-variant" />
+                    <AnimatedButton text="TRACK" className="outline-variant" onClick={() => handleTrackOrder('TSS-8892-X')} />
                   </div>
                 </div>
 
@@ -372,7 +381,7 @@ export default function Account() {
                   </div>
                   <div style={{ textAlign: 'right' }}>
                     <div style={{ fontWeight: 'bold', marginBottom: '10px' }}>$199.00</div>
-                    <AnimatedButton text="INVOICE" className="outline-variant" />
+                    <AnimatedButton text="INVOICE" className="outline-variant" onClick={() => handleInvoice('TSS-7104-Y')} />
                   </div>
                 </div>
               </div>
@@ -391,22 +400,24 @@ export default function Account() {
                 <div>
                   <h4 style={{ fontSize: '14px', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '15px', color: 'var(--accent-color)' }}>Notifications</h4>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '15px', marginBottom: '10px' }}>
-                    <input type="checkbox" defaultChecked style={{ accentColor: 'var(--accent-color)', width: '16px', height: '16px' }} />
+                    <input type="checkbox" checked={notifications.order} onChange={(e) => setNotifications(prev => ({...prev, order: e.target.checked}))} style={{ accentColor: 'var(--accent-color)', width: '16px', height: '16px' }} />
                     <span>Order Updates & Shipping Alerts</span>
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-                    <input type="checkbox" style={{ accentColor: 'var(--accent-color)', width: '16px', height: '16px' }} />
+                    <input type="checkbox" checked={notifications.marketing} onChange={(e) => setNotifications(prev => ({...prev, marketing: e.target.checked}))} style={{ accentColor: 'var(--accent-color)', width: '16px', height: '16px' }} />
                     <span>Marketing & Hardware Drops</span>
                   </div>
                 </div>
 
                 <div style={{ borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: '30px' }}>
                   <h4 style={{ fontSize: '14px', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '15px', color: 'var(--accent-color)' }}>Payment Channels</h4>
-                  <div style={{ background: '#111', padding: '15px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.05)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <span>•••• •••• •••• 4242 (Visa)</span>
-                    <button style={{ background: 'none', border: 'none', color: '#ff3333', cursor: 'pointer', fontSize: '12px', textTransform: 'uppercase' }}>Remove</button>
-                  </div>
-                  <button style={{ background: 'none', border: 'none', color: 'var(--accent-color)', cursor: 'pointer', fontSize: '12px', textTransform: 'uppercase', marginTop: '15px', letterSpacing: '1px' }}>+ Add Payment Method</button>
+                  {paymentMethods.map(method => (
+                    <div key={method} style={{ background: '#111', padding: '15px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.05)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+                      <span>{method}</span>
+                      <button onClick={() => handleRemovePayment(method)} style={{ background: 'none', border: 'none', color: '#ff3333', cursor: 'pointer', fontSize: '12px', textTransform: 'uppercase' }}>Remove</button>
+                    </div>
+                  ))}
+                  <button onClick={handleAddPayment} style={{ background: 'none', border: 'none', color: 'var(--accent-color)', cursor: 'pointer', fontSize: '12px', textTransform: 'uppercase', marginTop: '15px', letterSpacing: '1px' }}>+ Add Payment Method</button>
                 </div>
               </div>
             </>
