@@ -855,3 +855,26 @@
   height: 250px;
   opacity: 1;
 }
+
+/* --- STORE INFO SECTION --- */
+.store-grid {
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  gap: 30px;
+  margin-top: 40px;
+}
+
+.reviews-container {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
+}
+
+@media (max-width: 1024px) {
+  .store-grid {
+    grid-template-columns: 1fr;
+  }
+  .reviews-container {
+    grid-template-columns: 1fr;
+  }
+}

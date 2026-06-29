@@ -4,6 +4,7 @@ import { Cpu, Monitor, Zap, Shield, Wifi, Battery } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import AnimatedButton from '../components/AnimatedButton';
 import { TracingBeam } from '../components/ui/tracing-beam';
+import StoreInfo from '../components/StoreInfo';
 
 type Colorway = {
   id: string;
@@ -242,6 +243,9 @@ export default function Home() {
             </div>
           </div>
         </section>
+
+        {/* STORE INFO & REVIEWS */}
+        <StoreInfo />
       </TracingBeam>
     </>
   );
