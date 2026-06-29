@@ -6,6 +6,8 @@ import AnimatedButton from '../components/AnimatedButton';
 import ArrowButton from '../components/ArrowButton';
 import FloatingInput from '../components/FloatingInput';
 import { api } from '../lib/api';
+import { auth } from '../config/firebase';
+import { signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut } from 'firebase/auth';
 
 interface UserProfile {
   name?: string;
@@ -94,11 +96,12 @@ export default function Account() {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const res: any = await api.post('/auth/login', {
-        email: loginEmail,
-        password: loginPassword
-      });
-      setUser(res.user);
+      // 1. Firebase Login
+      await signInWithEmailAndPassword(auth, loginEmail, loginPassword);
+      
+      // 2. Sync / Fetch User profile from backend
+      const res: any = await api.get('/auth/me');
+      setUser(res);
       setIsLoggedIn(true);
     } catch (err: any) {
       alert(err.message || 'Login failed');
@@ -108,10 +111,13 @@ export default function Account() {
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const res: any = await api.post('/auth/register', {
+      // 1. Firebase Registration
+      await createUserWithEmailAndPassword(auth, regEmail, regPassword);
+      
+      // 2. Sync User profile to backend Firestore
+      const res: any = await api.post('/auth/sync', {
         name: regName,
         email: regEmail,
-        password: regPassword,
         address: regAddress
       });
       setUser(res.user);
@@ -123,13 +129,15 @@ export default function Account() {
 
   const handleLogout = async () => {
     try {
-      await api.post('/auth/logout', {});
+      await signOut(auth);
+      // Backend logout not strictly needed since token isn't in httpOnly cookie anymore,
+      // but if we need to clear session cookies we would call api.post('/auth/logout').
+      setUser(null);
+      setIsLoggedIn(false);
+      resetForms();
     } catch (err) {
       console.error('Logout error', err);
     }
-    setUser(null);
-    setIsLoggedIn(false);
-    resetForms();
   };
 
   const resetForms = () => {

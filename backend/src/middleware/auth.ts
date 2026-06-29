@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
-import jwt from 'jsonwebtoken';
+import { getAuth } from 'firebase-admin/auth';
+import { usersCollection } from '../models/User';
 
 export interface AuthRequest extends Request {
   user?: {
@@ -8,7 +9,7 @@ export interface AuthRequest extends Request {
   };
 }
 
-export const authenticateToken = (req: AuthRequest, res: Response, next: NextFunction) => {
+export const authenticateToken = async (req: AuthRequest, res: Response, next: NextFunction) => {
   const authHeader = req.headers['authorization'];
   const token = req.cookies?.token || (authHeader && authHeader.split(' ')[1]);
 
@@ -16,19 +17,28 @@ export const authenticateToken = (req: AuthRequest, res: Response, next: NextFun
     return res.status(401).json({ message: 'Access token required' });
   }
 
-  const jwtSecret = process.env.JWT_SECRET || 'fallback_secret_tss_key';
-
-  jwt.verify(token, jwtSecret, (err: any, decoded: any) => {
-    if (err) {
-      return res.status(403).json({ message: 'Invalid or expired token' });
+  try {
+    const decodedToken = await getAuth().verifyIdToken(token);
+    
+    // Fetch the user's role from Firestore
+    const userDoc = await usersCollection.doc(decodedToken.uid).get();
+    let role: 'user' | 'admin' = 'user';
+    
+    if (userDoc.exists) {
+      const userData = userDoc.data();
+      role = userData?.role || 'user';
     }
 
     req.user = {
-      id: decoded.id,
-      role: decoded.role
+      id: decodedToken.uid,
+      role
     };
+    
     next();
-  });
+  } catch (error) {
+    console.error('Auth verification error:', error);
+    return res.status(403).json({ message: 'Invalid or expired token' });
+  }
 };
 
 export const requireAdmin = (req: AuthRequest, res: Response, next: NextFunction) => {

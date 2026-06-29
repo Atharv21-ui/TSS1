@@ -1,13 +1,22 @@
 import { Router, Response } from 'express';
-import { User } from '../models/User';
+import { usersCollection, IUser } from '../models/User';
 import { authenticateToken, requireAdmin, AuthRequest } from '../middleware/auth';
+import { FieldValue } from 'firebase-admin/firestore';
 
 const router = Router();
 
 // Get all users (Admin only)
 router.get('/', authenticateToken, requireAdmin, async (req: AuthRequest, res: Response) => {
   try {
-    const users = await User.find().select('-password').sort({ createdAt: -1 });
+    const snapshot = await usersCollection.orderBy('createdAt', 'desc').get();
+    const users = snapshot.docs.map(doc => {
+      const data = doc.data() as IUser;
+      return {
+        _id: doc.id,
+        id: doc.id,
+        ...data
+      };
+    });
     res.json(users);
   } catch (error: any) {
     res.status(500).json({ message: 'Server error fetching users', error: error.message });
@@ -17,27 +26,33 @@ router.get('/', authenticateToken, requireAdmin, async (req: AuthRequest, res: R
 // Toggle user ban status (Admin only)
 router.patch('/:id/ban', authenticateToken, requireAdmin, async (req: AuthRequest, res: Response) => {
   try {
-    const user = await User.findById(req.params.id);
+    const docRef = usersCollection.doc(req.params.id as string);
+    const docSnap = await docRef.get();
     
-    if (!user) {
+    if (!docSnap.exists) {
       return res.status(404).json({ message: 'User not found' });
     }
 
-    if (user.role === 'admin') {
+    const userData = docSnap.data() as IUser;
+
+    if (userData.role === 'admin') {
       return res.status(403).json({ message: 'Cannot ban another admin' });
     }
 
-    user.isBanned = !user.isBanned;
-    await user.save();
+    const newBanStatus = !userData.isBanned;
+    await docRef.update({ 
+      isBanned: newBanStatus,
+      updatedAt: FieldValue.serverTimestamp()
+    });
 
     res.json({ 
-      message: user.isBanned ? 'User banned successfully' : 'User unbanned successfully',
+      message: newBanStatus ? 'User banned successfully' : 'User unbanned successfully',
       user: {
-        id: user._id,
-        name: user.name,
-        email: user.email,
-        role: user.role,
-        isBanned: user.isBanned
+        id: docRef.id,
+        name: userData.name,
+        email: userData.email,
+        role: userData.role,
+        isBanned: newBanStatus
       }
     });
   } catch (error: any) {
@@ -54,17 +69,22 @@ router.patch('/me/payment', authenticateToken, async (req: AuthRequest, res: Res
       return res.status(401).json({ message: 'Unauthorized' });
     }
 
-    const user = await User.findById(req.user.id);
-    if (!user) {
+    const docRef = usersCollection.doc(req.user.id);
+    const docSnap = await docRef.get();
+    
+    if (!docSnap.exists) {
       return res.status(404).json({ message: 'User not found' });
     }
 
-    user.savedPaymentMethod = { cardNumber, expiry };
-    await user.save();
+    const savedPaymentMethod = { cardNumber, expiry };
+    await docRef.update({ 
+      savedPaymentMethod,
+      updatedAt: FieldValue.serverTimestamp()
+    });
 
     res.json({
       message: 'Payment method saved successfully',
-      savedPaymentMethod: user.savedPaymentMethod
+      savedPaymentMethod
     });
   } catch (error: any) {
     res.status(500).json({ message: 'Server error saving payment method', error: error.message });

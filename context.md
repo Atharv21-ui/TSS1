@@ -97,3 +97,32 @@ g:/TSS/src/
 - **Changes in `backend/src/server.ts`:**
   - Appended `origin.includes('github.io')` to the allowed origins check.
 - **Current File Structure Changes:** No structural changes to files; `backend/src/server.ts` and `context.md` were modified.
+
+### 10. Migrated from MongoDB to Firebase
+- **What happened:** Replaced MongoDB completely with Firebase Firestore. The user wanted to scrap all Mongo logic and switch to Firebase. We maintained the custom JWT authentication to avoid disruptive frontend changes, but migrated all data storage (users, products) to Firestore collections.
+- **Changes made:**
+  - Removed `mongoose` and installed `firebase-admin`.
+  - Added `backend/src/config/firebase.ts` for Admin SDK initialization.
+  - Rewrote `models/User.ts` and `models/Product.ts` as standard TypeScript interfaces and exported Firestore Collection references.
+  - Rewrote controllers in `routes/auth.ts`, `routes/products.ts`, and `routes/users.ts` to perform CRUD using Firestore's `.get()`, `.add()`, `.update()`, and `.delete()`.
+  - Rewrote the `seedDatabase` function in `server.ts` to push default admin accounts and products to Firestore if the collections are empty.
+- **Current File Structure Changes:**
+  - `[NEW]` `backend/src/config/firebase.ts`
+  - `[MODIFIED]` `backend/src/models/User.ts`, `backend/src/models/Product.ts`, `backend/src/server.ts`, `backend/src/routes/auth.ts`, `backend/src/routes/products.ts`, `backend/src/routes/users.ts`
+
+### 11. Migrated Frontend to Firebase Authentication
+- **What happened:** The user opted for Option B (Firebase Authentication) instead of relying solely on the backend. Integrated the Firebase Client SDK into the frontend and updated the backend to verify Firebase ID tokens.
+- **Changes in Frontend:**
+  - Installed `firebase` client SDK.
+  - Added `src/config/firebase.ts` to initialize Firebase App and Auth.
+  - Updated `src/lib/api.ts` to fetch the Firebase `idToken` and inject it as a `Bearer` token in the `Authorization` header on every request.
+  - Rewrote the login and registration logic in `src/pages/Account.tsx` to use `signInWithEmailAndPassword` and `createUserWithEmailAndPassword`.
+  - Added a backend `/api/auth/sync` call during registration to sync the user's name and address to Firestore.
+- **Changes in Backend:**
+  - Updated `firebase-admin` imports to modular syntax (`firebase-admin/auth`, `firebase-admin/firestore`).
+  - Rewrote the `authenticateToken` middleware in `src/middleware/auth.ts` to use `getAuth().verifyIdToken()`.
+  - Removed standard `/login` and `/register` backend endpoints, replacing them with a `/sync` endpoint that ensures a Firestore document exists for the Firebase Auth user.
+  - Updated `src/server.ts` to create the default Admin and Custom Admin accounts using Firebase Auth (`getAuth().createUser()`) and syncing them to Firestore.
+- **Current File Structure Changes:**
+  - `[NEW]` `src/config/firebase.ts`
+  - `[MODIFIED]` `src/pages/Account.tsx`, `src/lib/api.ts`, `backend/src/middleware/auth.ts`, `backend/src/routes/auth.ts`, `backend/src/server.ts`, `backend/src/config/firebase.ts`, `backend/src/models/User.ts`, `backend/src/models/Product.ts`, `backend/src/routes/products.ts`, `backend/src/routes/users.ts`

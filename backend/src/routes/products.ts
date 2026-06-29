@@ -1,7 +1,8 @@
 import { Router, Request, Response } from 'express';
-import { Product } from '../models/Product';
+import { productsCollection, IProduct } from '../models/Product';
 import { authenticateToken, requireAdmin, AuthRequest } from '../middleware/auth';
 import { upload } from '../middleware/upload';
+import { FieldValue, Query } from 'firebase-admin/firestore';
 
 const router = Router();
 
@@ -9,13 +10,22 @@ const router = Router();
 router.get('/', async (req: Request, res: Response) => {
   try {
     const { category } = req.query;
-    const query: any = {};
+    let query: Query = productsCollection;
 
     if (category) {
-      query.category = String(category).toLowerCase();
+      query = query.where('category', '==', String(category).toLowerCase());
     }
+    
+    // Sort by createdAt descending (requires a composite index if filtered by category)
+    query = query.orderBy('createdAt', 'desc');
 
-    const products = await Product.find(query).sort({ createdAt: -1 });
+    const snapshot = await query.get();
+    const products = snapshot.docs.map(doc => ({
+      _id: doc.id,
+      id: doc.id, // Keep both for compatibility
+      ...doc.data()
+    }));
+    
     res.json(products);
   } catch (error: any) {
     res.status(500).json({ message: 'Error fetching products', error: error.message });
@@ -25,17 +35,15 @@ router.get('/', async (req: Request, res: Response) => {
 // Get single product
 router.get('/:id', async (req: Request, res: Response) => {
   try {
-    const product = await Product.findById(req.params.id);
-    if (!product) {
+    const docRef = await productsCollection.doc(req.params.id as string).get();
+    if (!docRef.exists) {
       return res.status(404).json({ message: 'Product not found' });
     }
-    res.json(product);
+    res.json({ _id: docRef.id, id: docRef.id, ...docRef.data() });
   } catch (error: any) {
     res.status(500).json({ message: 'Error fetching product details', error: error.message });
   }
 });
-
-// Upload image standalone route removed in favor of unified pipeline
 
 // Create product (Admin Only)
 router.post('/', authenticateToken, requireAdmin, upload.single('image'), async (req: AuthRequest, res: Response) => {
@@ -47,7 +55,6 @@ router.post('/', authenticateToken, requireAdmin, upload.single('image'), async 
       return res.status(400).json({ message: 'Title, price, and category are required' });
     }
 
-    // If an image was uploaded, grab the Cloudinary URL
     if (req.file) {
       src = req.file.path;
     }
@@ -56,7 +63,6 @@ router.post('/', authenticateToken, requireAdmin, upload.single('image'), async 
       return res.status(400).json({ message: 'Image source or file is required' });
     }
 
-    // Parse specs if it's sent as a string from FormData
     let parsedSpecs = [];
     if (typeof specs === 'string') {
       try {
@@ -68,7 +74,7 @@ router.post('/', authenticateToken, requireAdmin, upload.single('image'), async 
       parsedSpecs = specs;
     }
 
-    const product = new Product({
+    const newProduct: IProduct = {
       title,
       price,
       src,
@@ -76,11 +82,13 @@ router.post('/', authenticateToken, requireAdmin, upload.single('image'), async 
       description,
       category: category.toLowerCase(),
       stock: stock !== undefined ? Number(stock) : 10,
-      specs: parsedSpecs
-    });
+      specs: parsedSpecs,
+      createdAt: FieldValue.serverTimestamp(),
+      updatedAt: FieldValue.serverTimestamp()
+    };
 
-    await product.save();
-    res.status(201).json(product);
+    const docRef = await productsCollection.add(newProduct);
+    res.status(201).json({ _id: docRef.id, id: docRef.id, ...newProduct });
   } catch (error: any) {
     res.status(500).json({ message: 'Error creating product', error: error.message });
   }
@@ -92,18 +100,20 @@ router.put('/:id', authenticateToken, requireAdmin, upload.single('image'), asyn
     const { title, price, badge, description, category, stock } = req.body;
     let { src, specs } = req.body;
 
-    const product = await Product.findById(req.params.id);
-    if (!product) {
+    const docRef = productsCollection.doc(req.params.id as string);
+    const docSnap = await docRef.get();
+    
+    if (!docSnap.exists) {
       return res.status(404).json({ message: 'Product not found' });
     }
 
-    // If an image was uploaded, grab the Cloudinary URL
+    const productData = docSnap.data() as IProduct;
+
     if (req.file) {
       src = req.file.path;
     }
 
-    // Parse specs if it's sent as a string from FormData
-    let parsedSpecs = product.specs;
+    let parsedSpecs = productData.specs;
     if (specs) {
       if (typeof specs === 'string') {
         try {
@@ -114,17 +124,21 @@ router.put('/:id', authenticateToken, requireAdmin, upload.single('image'), asyn
       }
     }
 
-    if (title) product.title = title;
-    if (price) product.price = price;
-    if (src) product.src = src;
-    if (badge !== undefined) product.badge = badge;
-    if (description !== undefined) product.description = description;
-    if (category) product.category = category.toLowerCase();
-    if (stock !== undefined) product.stock = Number(stock);
-    product.specs = parsedSpecs;
+    const updates: Partial<IProduct> = { updatedAt: FieldValue.serverTimestamp() };
+    if (title) updates.title = title;
+    if (price) updates.price = price;
+    if (src) updates.src = src;
+    if (badge !== undefined) updates.badge = badge;
+    if (description !== undefined) updates.description = description;
+    if (category) updates.category = category.toLowerCase();
+    if (stock !== undefined) updates.stock = Number(stock);
+    updates.specs = parsedSpecs;
 
-    await product.save();
-    res.json(product);
+    await docRef.update(updates as any);
+    
+    // Fetch updated data to return
+    const updatedSnap = await docRef.get();
+    res.json({ _id: updatedSnap.id, id: updatedSnap.id, ...updatedSnap.data() });
   } catch (error: any) {
     res.status(500).json({ message: 'Error updating product', error: error.message });
   }
@@ -133,10 +147,12 @@ router.put('/:id', authenticateToken, requireAdmin, upload.single('image'), asyn
 // Delete product (Admin Only)
 router.delete('/:id', authenticateToken, requireAdmin, async (req: AuthRequest, res: Response) => {
   try {
-    const product = await Product.findByIdAndDelete(req.params.id);
-    if (!product) {
+    const docRef = productsCollection.doc(req.params.id as string);
+    const docSnap = await docRef.get();
+    if (!docSnap.exists) {
       return res.status(404).json({ message: 'Product not found' });
     }
+    await docRef.delete();
     res.json({ message: 'Product deleted successfully' });
   } catch (error: any) {
     res.status(500).json({ message: 'Error deleting product', error: error.message });
@@ -152,15 +168,18 @@ router.patch('/:id/stock', authenticateToken, requireAdmin, async (req: AuthRequ
       return res.status(400).json({ message: 'Valid stock value is required' });
     }
 
-    const product = await Product.findById(req.params.id);
-    if (!product) {
+    const docRef = productsCollection.doc(req.params.id as string);
+    const docSnap = await docRef.get();
+    if (!docSnap.exists) {
       return res.status(404).json({ message: 'Product not found' });
     }
 
-    product.stock = Number(stock);
-    await product.save();
+    await docRef.update({ 
+      stock: Number(stock),
+      updatedAt: FieldValue.serverTimestamp() 
+    });
 
-    res.json({ id: product._id, stock: product.stock, message: 'Stock updated successfully' });
+    res.json({ _id: docRef.id, id: docRef.id, stock: Number(stock), message: 'Stock updated successfully' });
   } catch (error: any) {
     res.status(500).json({ message: 'Error updating product stock', error: error.message });
   }

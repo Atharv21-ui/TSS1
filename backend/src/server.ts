@@ -2,7 +2,9 @@ import express, { Request, Response } from 'express';
 import path from 'path';
 import cors from 'cors';
 import dotenv from 'dotenv';
-import mongoose from 'mongoose';
+import { getAuth } from 'firebase-admin/auth';
+import { FieldValue, getFirestore } from 'firebase-admin/firestore';
+import './config/firebase';
 import bcrypt from 'bcryptjs';
 import cookieParser from 'cookie-parser';
 
@@ -16,14 +18,13 @@ process.on('unhandledRejection', (err) => {
 import authRoutes from './routes/auth';
 import productRoutes from './routes/products';
 import usersRoutes from './routes/users';
-import { User } from './models/User';
-import { Product } from './models/Product';
+import { IUser } from './models/User';
+import { IProduct } from './models/Product';
 
 dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 5000;
-const MONGODB_URI = process.env.MONGODB_URI || process.env.MONGO_URL || 'mongodb://127.0.0.1:27017/tss';
 
 // Middleware
 const allowedOrigins = [
@@ -62,37 +63,68 @@ app.get('/api/health', (req: Request, res: Response) => {
 // Database seeding function
 const seedDatabase = async () => {
   try {
+    const { usersCollection } = await import('./models/User');
+    const { productsCollection } = await import('./models/Product');
+
     // 1. Seed Admin User if none exists
-    const adminExists = await User.findOne({ role: 'admin' });
-    if (!adminExists) {
-      const hashedPassword = await bcrypt.hash('admin123', 10);
-      const admin = new User({
-        name: 'TSS Admin',
-        email: 'admin@tss.com',
-        password: hashedPassword,
-        role: 'admin'
-      });
-      await admin.save();
-      console.log('Seeded default admin account: admin@tss.com / admin123');
+    const adminQuery = await usersCollection.where('role', '==', 'admin').limit(1).get();
+    if (adminQuery.empty) {
+      try {
+        const adminUserRecord = await getAuth().createUser({
+          email: 'admin@tss.com',
+          password: 'admin123',
+          displayName: 'TSS Admin',
+        });
+        
+        await usersCollection.doc(adminUserRecord.uid).set({
+          name: 'TSS Admin',
+          email: 'admin@tss.com',
+          role: 'admin',
+          isBanned: false,
+          createdAt: FieldValue.serverTimestamp(),
+          updatedAt: FieldValue.serverTimestamp()
+        });
+        console.log('Seeded default admin account: admin@tss.com / admin123');
+      } catch (e: any) {
+        if (e.code === 'auth/email-already-exists') {
+          console.log('Admin auth user already exists, but firestore doc is missing. Skipping.');
+        } else {
+          console.error('Error creating admin auth:', e);
+        }
+      }
     }
 
     // 1b. Seed Custom Admin requested by user
-    const customAdminExists = await User.findOne({ email: 'admintss@tss.com' });
-    if (!customAdminExists) {
-      const hashedCustomPassword = await bcrypt.hash('atssdmin123', 10);
-      const customAdmin = new User({
-        name: 'Master Admin',
-        email: 'admintss@tss.com',
-        password: hashedCustomPassword,
-        role: 'admin'
-      });
-      await customAdmin.save();
-      console.log('Seeded custom admin account: admintss@tss.com');
+    const customAdminQuery = await usersCollection.where('email', '==', 'admintss@tss.com').get();
+    if (customAdminQuery.empty) {
+      try {
+        const customAdminRecord = await getAuth().createUser({
+          email: 'admintss@tss.com',
+          password: 'atssdmin123',
+          displayName: 'Master Admin',
+        });
+        
+        await usersCollection.doc(customAdminRecord.uid).set({
+          name: 'Master Admin',
+          email: 'admintss@tss.com',
+          role: 'admin',
+          isBanned: false,
+          createdAt: FieldValue.serverTimestamp(),
+          updatedAt: FieldValue.serverTimestamp()
+        });
+        console.log('Seeded custom admin account: admintss@tss.com');
+      } catch (e: any) {
+        if (e.code === 'auth/email-already-exists') {
+          console.log('Custom admin auth user already exists, but firestore doc is missing. Skipping.');
+        } else {
+          console.error('Error creating custom admin auth:', e);
+        }
+      }
     }
 
     // 2. Seed default products if none exist
-    const productCount = await Product.countDocuments();
-    if (productCount === 0) {
+    const productsSnapshot = await productsCollection.limit(1).get();
+    if (productsSnapshot.empty) {
       const defaultProducts = [
         // Laptops
         {
@@ -338,8 +370,21 @@ const seedDatabase = async () => {
         }
       ];
 
-      await Product.insertMany(defaultProducts);
-      console.log('Seeded default products into MongoDB!');
+      const timestampedProducts = defaultProducts.map(p => ({
+        ...p,
+        createdAt: FieldValue.serverTimestamp(),
+        updatedAt: FieldValue.serverTimestamp()
+      }));
+
+      const db = getFirestore();
+      const batch = db.batch();
+      timestampedProducts.forEach(product => {
+        const docRef = productsCollection.doc();
+        batch.set(docRef, product);
+      });
+      await batch.commit();
+
+      console.log('Seeded default products into Firestore!');
     }
   } catch (error) {
     console.error('Error seeding database:', error);
@@ -353,19 +398,9 @@ app.get(/(.*)/, (req: Request, res: Response) => {
   res.sendFile(path.join(__dirname, '../../dist/index.html'));
 });
 
-// Connect to MongoDB
-// Start Server immediately so Railway health checks pass, regardless of DB status
-app.listen(Number(PORT), '0.0.0.0', () => {
+// Start Server
+app.listen(Number(PORT), '0.0.0.0', async () => {
   console.log(`TSS Backend server running on port ${PORT}`);
+  // Run seeder in background
+  seedDatabase().catch(console.error);
 });
-
-// Connect to MongoDB in the background
-mongoose.connect(MONGODB_URI, { serverSelectionTimeoutMS: 5000 })
-  .then(async () => {
-    console.log('Connected to MongoDB Atlas successfully.');
-    await seedDatabase();
-  })
-  .catch(err => {
-    console.error('MongoDB connection error:', err);
-    console.error('SERVER RUNNING WITHOUT DATABASE. API calls will fail until DB is fixed.');
-  });

@@ -1,3 +1,5 @@
+import { auth } from '../config/firebase';
+
 const API_BASE = import.meta.env.VITE_API_URL || '/api';
 
 async function request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
@@ -10,10 +12,20 @@ async function request<T>(endpoint: string, options: RequestInit = {}): Promise<
     headers['Content-Type'] = 'application/json';
   }
 
+  // Inject Firebase ID Token if user is logged in
+  if (auth.currentUser) {
+    try {
+      const token = await auth.currentUser.getIdToken();
+      headers['Authorization'] = `Bearer ${token}`;
+    } catch (error) {
+      console.error("Error getting ID token", error);
+    }
+  }
+
   const config: RequestInit = {
     ...options,
     headers,
-    credentials: 'include' // Important for sending/receiving cookies
+    credentials: 'omit' // No longer rely on cookies, using Bearer tokens
   };
 
   const response = await fetch(`${API_BASE}${endpoint}`, config);
