@@ -71,6 +71,20 @@ const seedDatabase = async () => {
       console.log('Seeded default admin account: admin@tss.com / admin123');
     }
 
+    // 1b. Seed Custom Admin requested by user
+    const customAdminExists = await User.findOne({ email: 'admintss@tss.com' });
+    if (!customAdminExists) {
+      const hashedCustomPassword = await bcrypt.hash('atssdmin123', 10);
+      const customAdmin = new User({
+        name: 'Master Admin',
+        email: 'admintss@tss.com',
+        password: hashedCustomPassword,
+        role: 'admin'
+      });
+      await customAdmin.save();
+      console.log('Seeded custom admin account: admintss@tss.com');
+    }
+
     // 2. Seed default products if none exist
     const productCount = await Product.countDocuments();
     if (productCount === 0) {
