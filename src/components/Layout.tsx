@@ -28,6 +28,7 @@ export default function Layout() {
           { label: 'Accessories', ariaLabel: 'Shop accessories', link: '/accessories' },
           { label: 'Cart', ariaLabel: 'View cart', link: '/checkout' },
           { label: 'Account', ariaLabel: 'Manage account', link: '/account' },
+          { label: 'Portfolio', ariaLabel: 'View portfolio', link: '/portfolio' },
         ]}
         socialItems={[
           { label: 'Twitter', link: 'https://twitter.com' },

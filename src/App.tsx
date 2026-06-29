@@ -13,6 +13,7 @@ import Faq from './pages/Faq';
 import Checkout from './pages/Checkout';
 import Account from './pages/Account';
 import AdminDashboard from './pages/AdminDashboard';
+import Portfolio from './pages/Portfolio';
 import { CartProvider } from './context/CartContext';
 import './App.css';
 
@@ -34,6 +35,7 @@ function App() {
           <Route path="checkout" element={<Checkout />} />
           <Route path="account" element={<Account />} />
           <Route path="admin" element={<AdminDashboard />} />
+          <Route path="portfolio" element={<Portfolio />} />
         </Route>
       </Routes>
     </CartProvider>
