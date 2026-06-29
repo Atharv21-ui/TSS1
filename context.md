@@ -126,3 +126,14 @@ g:/TSS/src/
 - **Current File Structure Changes:**
   - `[NEW]` `src/config/firebase.ts`
   - `[MODIFIED]` `src/pages/Account.tsx`, `src/lib/api.ts`, `backend/src/middleware/auth.ts`, `backend/src/routes/auth.ts`, `backend/src/server.ts`, `backend/src/config/firebase.ts`, `backend/src/models/User.ts`, `backend/src/models/Product.ts`, `backend/src/routes/products.ts`, `backend/src/routes/users.ts`
+
+### 12. Integrated Firebase Admin Service Account & Seeded Firestore
+- **What happened:** Configured the backend Firebase Admin SDK with the user-provided service account JSON key. Enabled Cloud Firestore and Firebase Auth, then executed a full database seeding script.
+- **Changes in Backend:**
+  - Base64 encoded the Firebase service account credentials and saved to `backend/.env`.
+  - Added `backend/test-firestore.ts` to test database connectivity.
+  - Added `backend/seed-firestore.ts` to populate default admin users (`admin@tss.com`, `admintss@tss.com`) and 15 product items across multiple hardware categories into Firestore.
+- **Current File Structure Changes:**
+  - `[NEW]` `backend/test-firestore.ts`, `backend/seed-firestore.ts`
+  - `[MODIFIED]` `backend/.env`
+

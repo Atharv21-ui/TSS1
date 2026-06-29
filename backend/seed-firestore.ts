@@ -1,0 +1,339 @@
+import { getAuth } from 'firebase-admin/auth';
+import { FieldValue, getFirestore } from 'firebase-admin/firestore';
+import './src/config/firebase';
+import { usersCollection } from './src/models/User';
+import { productsCollection } from './src/models/Product';
+
+async function runSeed() {
+  console.log('Starting Firestore database seeding...');
+  
+  try {
+    // 1. Seed Admin User if none exists
+    const adminQuery = await usersCollection.where('role', '==', 'admin').limit(1).get();
+    if (adminQuery.empty) {
+      try {
+        const adminUserRecord = await getAuth().createUser({
+          email: 'admin@tss.com',
+          password: 'admin123',
+          displayName: 'TSS Admin',
+        });
+        
+        await usersCollection.doc(adminUserRecord.uid).set({
+          name: 'TSS Admin',
+          email: 'admin@tss.com',
+          role: 'admin',
+          isBanned: false,
+          createdAt: FieldValue.serverTimestamp(),
+          updatedAt: FieldValue.serverTimestamp()
+        });
+        console.log('✔ Seeded default admin account: admin@tss.com / admin123');
+      } catch (e: any) {
+        if (e.code === 'auth/email-already-exists') {
+          console.log('ℹ Admin auth user already exists, but firestore doc is missing. Skipping auth creation.');
+        } else {
+          console.error('Error creating admin auth:', e);
+        }
+      }
+    } else {
+      console.log('ℹ Admin user already exists in Firestore.');
+    }
+
+    // 1b. Seed Custom Admin requested by user
+    const customAdminQuery = await usersCollection.where('email', '==', 'admintss@tss.com').get();
+    if (customAdminQuery.empty) {
+      try {
+        const customAdminRecord = await getAuth().createUser({
+          email: 'admintss@tss.com',
+          password: 'atssdmin123',
+          displayName: 'Master Admin',
+        });
+        
+        await usersCollection.doc(customAdminRecord.uid).set({
+          name: 'Master Admin',
+          email: 'admintss@tss.com',
+          role: 'admin',
+          isBanned: false,
+          createdAt: FieldValue.serverTimestamp(),
+          updatedAt: FieldValue.serverTimestamp()
+        });
+        console.log('✔ Seeded custom admin account: admintss@tss.com / atssdmin123');
+      } catch (e: any) {
+        if (e.code === 'auth/email-already-exists') {
+          console.log('ℹ Custom admin auth user already exists, but firestore doc is missing. Skipping auth creation.');
+        } else {
+          console.error('Error creating custom admin auth:', e);
+        }
+      }
+    } else {
+      console.log('ℹ Custom admin user already exists in Firestore.');
+    }
+
+    // 2. Seed default products if none exist
+    const productsSnapshot = await productsCollection.limit(1).get();
+    if (productsSnapshot.empty) {
+      const defaultProducts = [
+        {
+          title: 'TSS BLADE X1',
+          price: '1,299$',
+          src: 'https://images.unsplash.com/photo-1593640408182-31c70c8268f5?auto=format&fit=crop&q=80&w=600',
+          badge: 'GAMING',
+          description: 'The ultimate portable gaming powerhouse.',
+          category: 'laptops',
+          stock: 15,
+          specs: [
+            { label: 'Processor', value: 'Intel Core i9-13900H' },
+            { label: 'Graphics', value: 'NVIDIA RTX 4080 (150W)' },
+            { label: 'Display', value: '16" QHD+ 240Hz OLED' },
+            { label: 'Memory', value: '32GB DDR5 5600MHz' },
+            { label: 'Storage', value: '2TB PCIe Gen4 NVMe' }
+          ]
+        },
+        {
+          title: 'TSS STUDIO',
+          price: '1,599$',
+          src: 'https://images.unsplash.com/photo-1611186871348-b1ce696e52c9?auto=format&fit=crop&q=80&w=600',
+          badge: 'CREATORS',
+          description: 'Color accuracy and unmatched rendering speeds.',
+          category: 'laptops',
+          stock: 12,
+          specs: [
+            { label: 'Processor', value: 'Intel Core i7-13700H' },
+            { label: 'Graphics', value: 'NVIDIA RTX 4070 Studio' },
+            { label: 'Display', value: '16" 4K Mini-LED (100% DCI-P3)' },
+            { label: 'Memory', value: '64GB DDR5 5200MHz' },
+            { label: 'Storage', value: '4TB (2x 2TB RAID 0)' }
+          ]
+        },
+        {
+          title: 'TSS PRO 16',
+          price: '1,899$',
+          src: 'https://images.unsplash.com/photo-1525547719571-a2d4ac8945e2?auto=format&fit=crop&q=80&w=600',
+          badge: 'WORKSTATION',
+          description: 'Desktop-level performance in a magnesium chassis.',
+          category: 'laptops',
+          stock: 8,
+          specs: [
+            { label: 'Processor', value: 'AMD Ryzen 9 7945HX3D' },
+            { label: 'Graphics', value: 'NVIDIA RTX 4090 (175W)' },
+            { label: 'Display', value: '17" QHD+ 240Hz IPS' },
+            { label: 'Memory', value: '64GB DDR5 5600MHz' },
+            { label: 'Storage', value: '2TB PCIe Gen4 NVMe' }
+          ]
+        },
+        {
+          title: 'TSS MONOLITH',
+          price: '2,499$',
+          src: 'https://images.unsplash.com/photo-1587831990711-23ca6441447b?auto=format&fit=crop&q=80&w=600',
+          badge: 'EXTREME',
+          description: 'The pinnacle of desktop computing.',
+          category: 'desktops',
+          stock: 5,
+          specs: [
+            { label: 'Processor', value: 'Intel Core i9-14900K' },
+            { label: 'Graphics', value: 'NVIDIA RTX 4090 24GB' },
+            { label: 'Motherboard', value: 'Z790 E-ATX' },
+            { label: 'Memory', value: '128GB DDR5 6000MHz' },
+            { label: 'Cooling', value: 'Custom Hardline Liquid Loop' }
+          ]
+        },
+        {
+          title: 'TSS TOWER X',
+          price: '1,799$',
+          src: 'https://images.unsplash.com/photo-1593640495253-23196b27a87f?auto=format&fit=crop&q=80&w=600',
+          badge: 'GAMING',
+          description: 'High performance gaming machine.',
+          category: 'desktops',
+          stock: 10,
+          specs: [
+            { label: 'Processor', value: 'AMD Ryzen 7 7800X3D' },
+            { label: 'Graphics', value: 'NVIDIA RTX 4080 Super' },
+            { label: 'Motherboard', value: 'B650 ATX' },
+            { label: 'Memory', value: '32GB DDR5 6000MHz' },
+            { label: 'Cooling', value: '360mm AIO Liquid Cooler' }
+          ]
+        },
+        {
+          title: 'TSS COMPACT',
+          price: '999$',
+          src: 'https://images.unsplash.com/photo-1625842268584-8f3296236761?auto=format&fit=crop&q=80&w=600',
+          badge: 'MINI ITX',
+          description: 'Massive power in a tiny footprint.',
+          category: 'desktops',
+          stock: 14,
+          specs: [
+            { label: 'Processor', value: 'Intel Core i5-13600K' },
+            { label: 'Graphics', value: 'NVIDIA RTX 4060 Ti 16GB' },
+            { label: 'Motherboard', value: 'B760i Mini-ITX' },
+            { label: 'Memory', value: '32GB DDR5 5600MHz' },
+            { label: 'Cooling', value: 'Low-Profile Air Cooler' }
+          ]
+        },
+        {
+          title: 'TSS PRINTMAX 3D',
+          price: '899$',
+          src: 'https://images.unsplash.com/photo-1590457494480-1a73fb5789f2?auto=format&fit=crop&q=80&w=600',
+          badge: 'PRO 3D',
+          description: 'Precision layer printing for creators.',
+          category: 'printers',
+          stock: 7,
+          specs: [
+            { label: 'Technology', value: 'FDM (Fused Deposition Modeling)' },
+            { label: 'Build Volume', value: '300 x 300 x 400 mm' },
+            { label: 'Layer Resolution', value: '50-400 microns' },
+            { label: 'Speed', value: 'Up to 600mm/s' },
+            { label: 'Connectivity', value: 'Wi-Fi, USB, Ethernet' }
+          ]
+        },
+        {
+          title: 'TSS OFFICE LASER',
+          price: '349$',
+          src: 'https://images.unsplash.com/photo-1612815154858-60aa4c59eaa6?auto=format&fit=crop&q=80&w=600',
+          badge: 'BUSINESS',
+          description: 'High speed, ultra-efficient document printing.',
+          category: 'printers',
+          stock: 22,
+          specs: [
+            { label: 'Technology', value: 'Monochrome Laser' },
+            { label: 'Print Speed', value: '45 pages per minute' },
+            { label: 'Resolution', value: '1200 x 1200 dpi' },
+            { label: 'Paper Capacity', value: '500 sheets' },
+            { label: 'Functions', value: 'Print, Copy, Scan, Fax' }
+          ]
+        },
+        {
+          title: 'TSS INKJET LITE',
+          price: '129$',
+          src: 'https://images.unsplash.com/photo-1579546929518-9e396f3cc809?auto=format&fit=crop&q=80&w=600',
+          badge: 'HOME',
+          description: 'Vibrant colors for family and home office.',
+          category: 'printers',
+          stock: 35,
+          specs: [
+            { label: 'Technology', value: 'Thermal Inkjet' },
+            { label: 'Color Speed', value: '10 pages per minute' },
+            { label: 'Resolution', value: '4800 x 1200 optimized dpi' },
+            { label: 'Paper Capacity', value: '100 sheets' },
+            { label: 'Functions', value: 'Print, Copy, Scan' }
+          ]
+        },
+        {
+          title: 'TSS QUANTUM 8K',
+          price: '3,999$',
+          src: 'https://images.unsplash.com/photo-1593359677879-a4bb92f829d1?auto=format&fit=crop&q=80&w=600',
+          badge: '8K OLED',
+          description: 'The future of home cinema is here.',
+          category: 'led-tv',
+          stock: 4,
+          specs: [
+            { label: 'Resolution', value: '8K UHD (7680 x 4320)' },
+            { label: 'Panel Tech', value: 'Quantum OLED' },
+            { label: 'Refresh Rate', value: '120Hz Native' },
+            { label: 'HDR', value: 'Dolby Vision IQ / HDR10+' },
+            { label: 'Audio', value: '6.2.2 Channel Dolby Atmos' }
+          ]
+        },
+        {
+          title: 'TSS CINEMA 75"',
+          price: '2,199$',
+          src: 'https://images.unsplash.com/photo-1593784991095-a205069470b6?auto=format&fit=crop&q=80&w=600',
+          badge: '4K HDR',
+          description: 'Massive screen, incredible color accuracy.',
+          category: 'led-tv',
+          stock: 6,
+          specs: [
+            { label: 'Resolution', value: '4K UHD (3840 x 2160)' },
+            { label: 'Panel Tech', value: 'Mini-LED (Local Dimming)' },
+            { label: 'Refresh Rate', value: '144Hz VRR' },
+            { label: 'HDR', value: 'HDR10 Pro' },
+            { label: 'Smart OS', value: 'TSS WebOS v8' }
+          ]
+        },
+        {
+          title: 'TSS GAMING 55"',
+          price: '1,299$',
+          src: 'https://images.unsplash.com/photo-1509281373149-e957c6296406?auto=format&fit=crop&q=80&w=600',
+          badge: '144HZ',
+          description: 'Built specifically for next-gen consoles.',
+          category: 'led-tv',
+          stock: 11,
+          specs: [
+            { label: 'Resolution', value: '4K UHD (3840 x 2160)' },
+            { label: 'Panel Tech', value: 'OLED Evo' },
+            { label: 'Refresh Rate', value: '144Hz / 240Hz (1080p)' },
+            { label: 'Gaming Tech', value: 'G-Sync / FreeSync Premium' },
+            { label: 'Input Lag', value: '< 1ms' }
+          ]
+        },
+        {
+          title: 'TSS MECH KEYBOARD',
+          price: '199$',
+          src: 'https://images.unsplash.com/photo-1595225476474-87563907a212?auto=format&fit=crop&q=80&w=600',
+          badge: 'TACTILE',
+          description: 'Precision mechanical switches with per-key RGB.',
+          category: 'accessories',
+          stock: 25,
+          specs: [
+            { label: 'Switches', value: 'TSS Optical Linear' },
+            { label: 'Keycaps', value: 'Double-shot PBT' },
+            { label: 'Polling Rate', value: '8000Hz' },
+            { label: 'Connectivity', value: 'Wired USB-C' }
+          ]
+        },
+        {
+          title: 'TSS PRO MOUSE',
+          price: '129$',
+          src: 'https://images.unsplash.com/photo-1527814050087-179f376dd0e7?auto=format&fit=crop&q=80&w=600',
+          badge: 'WIRELESS',
+          description: 'Ultra-lightweight competitive gaming mouse.',
+          category: 'accessories',
+          stock: 30,
+          specs: [
+            { label: 'Sensor', value: 'TSS Focus Pro 30K' },
+            { label: 'Weight', value: '58g' },
+            { label: 'Battery Life', value: '90 Hours' },
+            { label: 'Connectivity', value: '2.4GHz Wireless' }
+          ]
+        },
+        {
+          title: 'TSS STUDIO HEADSET',
+          price: '249$',
+          src: 'https://images.unsplash.com/photo-1618366712010-f4ae9c647dcb?auto=format&fit=crop&q=80&w=600',
+          badge: 'ANC',
+          description: 'Immersive spatial audio and active noise cancellation.',
+          category: 'accessories',
+          stock: 18,
+          specs: [
+            { label: 'Drivers', value: '50mm Titanium' },
+            { label: 'Audio', value: 'THX Spatial Audio' },
+            { label: 'Microphone', value: 'Detachable Supercardioid' },
+            { label: 'Battery', value: 'Up to 40 Hours' }
+          ]
+        }
+      ];
+
+      const timestampedProducts = defaultProducts.map(p => ({
+        ...p,
+        createdAt: FieldValue.serverTimestamp(),
+        updatedAt: FieldValue.serverTimestamp()
+      }));
+
+      const db = getFirestore();
+      const batch = db.batch();
+      timestampedProducts.forEach(product => {
+        const docRef = productsCollection.doc();
+        batch.set(docRef, product);
+      });
+      await batch.commit();
+
+      console.log('✔ Seeded 15 default products into Firestore!');
+    } else {
+      console.log('ℹ Products collection already contains documents.');
+    }
+    process.exit(0);
+  } catch (error) {
+    console.error('❌ Error seeding database:', error);
+    process.exit(1);
+  }
+}
+
+runSeed();
