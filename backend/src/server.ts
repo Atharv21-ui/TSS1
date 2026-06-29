@@ -360,7 +360,7 @@ app.listen(Number(PORT), '0.0.0.0', () => {
 });
 
 // Connect to MongoDB in the background
-mongoose.connect(MONGODB_URI)
+mongoose.connect(MONGODB_URI, { serverSelectionTimeoutMS: 5000 })
   .then(async () => {
     console.log('Connected to MongoDB Atlas successfully.');
     await seedDatabase();
