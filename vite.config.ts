@@ -8,6 +8,7 @@ export default defineConfig({
     react(),
     tailwindcss(),
   ],
+  base: '/TSS1/', // Required for GitHub Pages hosting
   server: {
     host: true, // Allow mobile network access
     proxy: {
