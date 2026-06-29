@@ -38,7 +38,7 @@ app.use(cors({
     
     // Check if origin matches allowed patterns
     const isLocalIP = origin.includes('192.168.') || origin.includes('10.') || origin.includes('172.');
-    if (allowedOrigins.indexOf(origin) !== -1 || origin.includes('localhost') || isLocalIP || origin.includes('netlify.app') || origin.includes('railway.app')) {
+    if (allowedOrigins.indexOf(origin) !== -1 || origin.includes('localhost') || isLocalIP || origin.includes('netlify.app') || origin.includes('railway.app') || origin.includes('github.io')) {
       callback(null, true);
     } else {
       callback(new Error('Not allowed by CORS'));

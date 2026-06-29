@@ -92,3 +92,8 @@ g:/TSS/src/
 - **Current File Structure Changes:**
   - `[NEW]` [ecommerce_backend_blueprint.md](file:///g:/TSS/ecommerce_backend_blueprint.md)
 
+### 9. Fixed CORS Issue for GitHub Pages Hosted App
+- **What happened:** Identified and fixed a `net::ERR_EMPTY_RESPONSE` error when the frontend (`atharv21-ui.github.io`) tried to communicate with the Railway backend. The root cause was that `github.io` was missing from the CORS allowed origins list. Added `github.io` to the allowed origins check in `backend/src/server.ts`.
+- **Changes in `backend/src/server.ts`:**
+  - Appended `origin.includes('github.io')` to the allowed origins check.
+- **Current File Structure Changes:** No structural changes to files; `backend/src/server.ts` and `context.md` were modified.
