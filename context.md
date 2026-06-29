@@ -56,3 +56,8 @@
 - **What happened:** Generated a comprehensive technical document (`TSS_Website_Documentation.pdf`) detailing the application's executive summary, full-stack tech stack, route-based page directory (13 pages), administrative CMS/Analytics features, and deployment structure.
 - **Current File Structure Changes:**
   - `[NEW]` [TSS_Website_Documentation.pdf](file:///g:/TSS/TSS_Website_Documentation.pdf)
+
+### 8. Created E-Commerce Backend Blueprint Documentation
+- **What happened:** Investigated the backend architecture and frontend API connection methods. Wrote a detailed markdown document mapping the overall flow, models, frontend connections (`src/lib/api.ts`), and common errors/fixes specifically encountered in this stack (like CORS, HttpOnly cookies with Vite, Multer FormData boundary issues).
+- **Current File Structure Changes:**
+  - `[NEW]` [ecommerce_backend_blueprint.md](file:///g:/TSS/ecommerce_backend_blueprint.md)
