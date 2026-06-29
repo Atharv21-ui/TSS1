@@ -1,4 +1,29 @@
 # Context File
+
+## Changes Made
+- Added a new `StoreInfo` component that integrates Google Maps iframe and live google reviews data.
+- **REDESIGNED**: Overhauled `StoreInfo` layout to fix UI issues. It now features a premium glassmorphic Store Location card with a 3D-filtered map, and a seamlessly infinite scrolling marquee carousel for the Google reviews. Added GSAP entrance animations.
+- Included the `StoreInfo` component in `Home.tsx` to render at the bottom of the home page.
+
+## Current File Structure
+```
+g:/TSS/src/
+├── App.css
+├── App.tsx
+├── index.css
+├── main.tsx
+├── assets/
+├── components/
+│   ├── AnimatedButton.tsx
+│   ├── StoreInfo.tsx      <-- [NEW] Added StoreInfo component
+│   └── ui/
+├── context/
+├── hooks/
+├── lib/
+└── pages/
+    ├── Home.tsx           <-- [MODIFIED] Added StoreInfo integration
+    └── ... (other pages)
+```
 ## Recent Changes (2026-06-29)
 
 ### 1. Fixed Netlify SPA Routing
@@ -61,3 +86,4 @@
 - **What happened:** Investigated the backend architecture and frontend API connection methods. Wrote a detailed markdown document mapping the overall flow, models, frontend connections (`src/lib/api.ts`), and common errors/fixes specifically encountered in this stack (like CORS, HttpOnly cookies with Vite, Multer FormData boundary issues).
 - **Current File Structure Changes:**
   - `[NEW]` [ecommerce_backend_blueprint.md](file:///g:/TSS/ecommerce_backend_blueprint.md)
+

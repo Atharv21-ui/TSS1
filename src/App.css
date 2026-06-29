@@ -856,25 +856,207 @@
   opacity: 1;
 }
 
-/* --- STORE INFO SECTION --- */
-.store-grid {
-  display: grid;
-  grid-template-columns: 1fr 2fr;
-  gap: 30px;
-  margin-top: 40px;
+/* --- PREMIUM STORE INFO SECTION --- */
+.store-card-premium {
+  background: rgba(10, 10, 15, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 30px 60px rgba(0, 0, 0, 0.6), 0 0 40px rgba(var(--accent-color-rgb), 0.15);
+  position: relative;
 }
 
-.reviews-container {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
+.store-card-premium::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; width: 100%; height: 100%;
+  background: linear-gradient(135deg, rgba(255,255,255,0.05) 0%, transparent 100%);
+  pointer-events: none;
+}
+
+.store-card-content {
+  display: flex;
+  flex-direction: row;
+}
+
+.store-info-col {
+  flex: 1;
+  padding: 60px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.store-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(var(--accent-color-rgb), 0.1);
+  color: var(--accent-color);
+  padding: 6px 14px;
+  border-radius: 50px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  margin-bottom: 20px;
+  width: fit-content;
+}
+
+.store-name {
+  font-size: 32px;
+  line-height: 1.2;
+  margin-bottom: 10px;
+  text-shadow: 0 0 20px rgba(255,255,255,0.1);
+}
+
+.store-address {
+  color: rgba(255,255,255,0.6);
+  font-size: 16px;
+  line-height: 1.6;
+  margin-bottom: 40px;
+}
+
+.store-rating-box {
+  display: flex;
+  align-items: center;
   gap: 20px;
+  background: rgba(0,0,0,0.4);
+  padding: 20px;
+  border-radius: 12px;
+  border: 1px solid rgba(255,255,255,0.05);
+  margin-bottom: 40px;
+}
+
+.rating-score-large {
+  font-size: 48px;
+  color: var(--accent-color);
+  line-height: 1;
+}
+
+.rating-details .stars-row {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 6px;
+}
+
+.rating-details .review-count {
+  font-size: 13px;
+  color: rgba(255,255,255,0.5);
+}
+
+.store-map-col {
+  flex: 1.2;
+  min-height: 400px;
+  position: relative;
+  border-left: 1px solid rgba(255,255,255,0.1);
+}
+
+.map-glass-frame {
+  width: 100%;
+  height: 100%;
 }
 
 @media (max-width: 1024px) {
-  .store-grid {
-    grid-template-columns: 1fr;
+  .store-card-content {
+    flex-direction: column-reverse;
   }
-  .reviews-container {
-    grid-template-columns: 1fr;
+  .store-info-col {
+    padding: 40px 20px;
   }
+  .store-map-col {
+    min-height: 300px;
+    border-left: none;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+  }
+}
+
+/* --- REVIEWS MARQUEE --- */
+.reviews-marquee-container {
+  overflow: hidden;
+  white-space: nowrap;
+  position: relative;
+  mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent);
+  -webkit-mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent);
+  padding: 20px 0;
+}
+
+.reviews-track {
+  display: inline-flex;
+  gap: 30px;
+  animation: reviewScroll 40s linear infinite;
+}
+
+.reviews-track:hover {
+  animation-play-state: paused;
+}
+
+@keyframes reviewScroll {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+.review-card-premium {
+  width: 400px;
+  background: rgba(255,255,255,0.02);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 16px;
+  padding: 30px;
+  display: inline-flex;
+  flex-direction: column;
+  white-space: normal;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+}
+
+.review-card-premium:hover {
+  background: rgba(255,255,255,0.05);
+  border-color: rgba(var(--accent-color-rgb), 0.5);
+  transform: translateY(-5px);
+  box-shadow: 0 10px 30px rgba(0,0,0,0.5), 0 0 20px rgba(var(--accent-color-rgb), 0.1);
+}
+
+.review-card-header {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  margin-bottom: 20px;
+}
+
+.review-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--accent-color);
+  color: #000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+}
+
+.review-meta {
+  flex: 1;
+}
+
+.review-meta h5 {
+  font-size: 15px;
+  margin-bottom: 2px;
+  color: #fff;
+}
+
+.review-meta span {
+  font-size: 12px;
+  color: rgba(255,255,255,0.4);
+}
+
+.review-stars-small {
+  display: flex;
+  gap: 2px;
+}
+
+.review-body p {
+  color: rgba(255,255,255,0.8);
+  font-size: 14px;
+  line-height: 1.6;
+  font-style: italic;
 }
