@@ -29,6 +29,12 @@ jobs:
       - name: Build frontend
         env:
           VITE_API_URL: https://tss1-production.up.railway.app/api
+          VITE_FIREBASE_API_KEY: AIzaSyCsPW390jKenzTAWibcGNYzofZ6lYDc8NM
+          VITE_FIREBASE_AUTH_DOMAIN: tss-1-2b0db.firebaseapp.com
+          VITE_FIREBASE_PROJECT_ID: tss-1-2b0db
+          VITE_FIREBASE_STORAGE_BUCKET: tss-1-2b0db.firebasestorage.app
+          VITE_FIREBASE_MESSAGING_SENDER_ID: "794687231217"
+          VITE_FIREBASE_APP_ID: 1:794687231217:web:ad6a3744671386d5830550
         run: npx vite build
 
       - name: Deploy to GitHub Pages

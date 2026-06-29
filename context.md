@@ -137,3 +137,8 @@ g:/TSS/src/
   - `[NEW]` `backend/test-firestore.ts`, `backend/seed-firestore.ts`
   - `[MODIFIED]` `backend/.env`
 
+### 13. Added Firebase Config to GitHub Actions Deployment Workflow
+- **What happened:** Updated `.github/workflows/deploy.yml` to inject the Firebase web configuration environment variables into the Vite build step during automated GitHub Pages deployment.
+- **Current File Structure Changes:**
+  - `[MODIFIED]` `.github/workflows/deploy.yml`
+
