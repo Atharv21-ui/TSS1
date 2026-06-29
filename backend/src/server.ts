@@ -358,13 +358,14 @@ mongoose.connect(MONGODB_URI)
   .then(async () => {
     console.log('Connected to MongoDB Atlas successfully.');
     await seedDatabase();
-    
-    // Start Server only after DB connection
-    app.listen(Number(PORT), '0.0.0.0', () => {
-      console.log(`TSS Backend server running on port ${PORT}`);
-    });
   })
   .catch(err => {
     console.error('MongoDB connection error:', err);
-    process.exit(1);
+    console.error('SERVER RUNNING WITHOUT DATABASE. API calls will fail until DB is fixed.');
+  })
+  .finally(() => {
+    // Start Server always, even if DB fails, to prevent Railway crash loops
+    app.listen(Number(PORT), '0.0.0.0', () => {
+      console.log(`TSS Backend server running on port ${PORT}`);
+    });
   });
