@@ -7,7 +7,7 @@ import { getAuth } from 'firebase-admin/auth';
 import { FieldValue, getFirestore } from 'firebase-admin/firestore';
 import './config/firebase';
 import bcrypt from 'bcryptjs';
-import cookieParser from 'cookie-parser';
+import rateLimit from 'express-rate-limit';
 
 process.on('uncaughtException', (err) => {
   console.error('UNCAUGHT EXCEPTION:', err);
@@ -38,9 +38,19 @@ app.use(cors({
     // Allow requests with no origin (like mobile apps or curl requests)
     if (!origin) return callback(null, true);
     
-    // Check if origin matches allowed patterns
-    const isLocalIP = origin.includes('192.168.') || origin.includes('10.') || origin.includes('172.');
-    if (allowedOrigins.indexOf(origin) !== -1 || origin.includes('localhost') || isLocalIP || origin.includes('netlify.app') || origin.includes('railway.app') || origin.includes('github.io')) {
+    // Check if origin matches allowed patterns securely
+    const isLocalIP = origin.startsWith('http://192.168.') || origin.startsWith('http://10.') || origin.startsWith('http://172.');
+    const isLocalhost = origin.startsWith('http://localhost:');
+    
+    if (
+      allowedOrigins.includes(origin) || 
+      isLocalhost || 
+      isLocalIP || 
+      origin.endsWith('.netlify.app') || 
+      origin.endsWith('.railway.app') || 
+      origin.endsWith('.github.io') ||
+      origin === 'https://atharv21-ui.github.io'
+    ) {
       callback(null, true);
     } else {
       callback(new Error('Not allowed by CORS'));
@@ -49,7 +59,18 @@ app.use(cors({
   credentials: true
 }));
 app.use(express.json());
-app.use(cookieParser());
+
+// Global API Rate Limiter
+const apiLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100, // Limit each IP to 100 requests per `window` (here, per 15 minutes)
+  standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
+  legacyHeaders: false, // Disable the `X-RateLimit-*` headers
+  message: { message: 'Too many requests from this IP, please try again later.' }
+});
+
+// Apply rate limiting to all /api routes
+app.use('/api', apiLimiter);
 
 // Routes
 app.use('/api/auth', authRoutes);

@@ -210,3 +210,12 @@ g:/TSS/src/
   - ❌ Issue 3 (ISP DNS blocking): **ROOT CAUSE CONFIRMED** — `nslookup` against ISP DNS (`10.121.89.56`) returns `Query refused` for `railway.app` domains. Google DNS (`8.8.8.8`) resolves correctly to `69.46.46.50`. Direct IP connection to `69.46.46.50/api/health` returns `{"status":"ok"}`.
 - **Solutions:** Change device DNS to `8.8.8.8` / `1.1.1.1` (quick fix) or buy a custom domain and link to Railway (permanent fix for all users).
 
+### 22. Fixed CodeQL Security Vulnerabilities
+- **What happened:** GitHub CodeQL flagged missing rate limiting, incomplete URL substring sanitization (CORS), and missing CSRF middleware.
+- **Changes in Backend:**
+  - **Rate Limiting**: Installed `express-rate-limit` and applied a global API rate limiter (max 100 requests per 15 minutes per IP) to all `/api` routes to prevent abuse.
+  - **URL Sanitization**: Fixed the CORS configuration in `server.ts` to strictly validate origins using `endsWith` or exact string matching instead of just `includes` (which could be bypassed by malicious domains like `example.github.io.com`).
+  - **CSRF**: Removed `cookie-parser` and `req.cookies` fallback entirely. Since the application exclusively uses Firebase Bearer tokens sent in the Authorization header (`credentials: 'omit'` on the frontend), it is naturally immune to CSRF attacks and doesn't need CSRF middleware or a cookie parser.
+- **Current File Structure Changes:**
+  - `[MODIFIED]` `backend/src/server.ts`, `backend/src/middleware/auth.ts`, `backend/package.json`
+
