@@ -192,3 +192,12 @@ g:/TSS/src/
 - **Current File Structure Changes:**
   - `[MODIFIED]` `src/lib/api.ts`
 
+### 20. Fixed Express 5 Breaking Changes Crashing Railway Backend
+- **What happened:** The Railway backend was returning `ERR_EMPTY_RESPONSE` / `net::ERR_CONNECTION_CLOSED` for ALL requests (including `/api/health`). Root cause: Express 5.x uses a stricter `path-to-regexp` library that doesn't support unnamed regex capture groups. The catch-all route `app.get(/(.*)/)` was crashing the server silently.
+- **Changes in Backend:**
+  - Replaced `app.get(/(.*)/)` with Express 5-compatible `app.get('{*splat}')` named wildcard syntax.
+  - Wrapped the SPA catch-all in a `fs.existsSync(distPath)` check so it only activates when a frontend build is present (Railway only runs the backend).
+  - Added a global Express error handler `(err, req, res, next)` to catch unhandled errors and return proper 500 responses instead of silently crashing.
+  - Added `NextFunction` and `fs` imports to `server.ts`.
+- **Current File Structure Changes:**
+  - `[MODIFIED]` `backend/src/server.ts`
