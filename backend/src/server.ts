@@ -416,6 +416,14 @@ const seedDatabase = async () => {
 // Serve frontend static files in production (only if dist exists)
 const distPath = path.join(__dirname, '../../dist');
 if (fs.existsSync(distPath)) {
+  const staticLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: 500, // Higher limit for static assets
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: 'Too many requests'
+  });
+  app.use(staticLimiter);
   app.use(express.static(distPath));
   app.get('{*splat}', (req: Request, res: Response) => {
     res.sendFile(path.join(distPath, 'index.html'));
