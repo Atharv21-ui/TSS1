@@ -238,4 +238,13 @@ g:/TSS/src/
   - `[NEW]` `backend/src/utils/sanitize.ts`
   - `[MODIFIED]` `backend/src/routes/auth.ts`, `backend/src/routes/users.ts`, `backend/src/routes/products.ts`
 
+### 25. Switch to HashRouter for GitHub Pages Compatability
+- **What happened:** Reloading/refreshing pages directly (e.g. `/account`) returned GitHub Pages 404 error because static site hosting doesn't support SPA fallback.
+- **Changes in Frontend:**
+  - Replaced `BrowserRouter` with `HashRouter` in `src/main.tsx`.
+  - This appends `#` to client-side paths, resolving 404 errors during browser reloads on static servers.
+- **Current File Structure Changes:**
+  - `[MODIFIED]` `src/main.tsx`
+
+
 
