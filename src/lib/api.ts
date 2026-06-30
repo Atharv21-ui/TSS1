@@ -1,6 +1,20 @@
 import { auth } from '../config/firebase';
 
-const API_BASE = import.meta.env.VITE_API_URL || '/api';
+const getApiBase = () => {
+  if (typeof window === 'undefined') return '/api';
+  
+  const isLocal = window.location.hostname === 'localhost' || 
+                  window.location.hostname === '127.0.0.1' || 
+                  window.location.hostname.startsWith('192.168.');
+  
+  if (isLocal) {
+    return import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+  }
+  
+  return 'https://tss1-production.up.railway.app/api';
+};
+
+const API_BASE = getApiBase();
 
 async function request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
   const headers: Record<string, string> = {

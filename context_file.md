@@ -184,3 +184,12 @@ g:/TSS/src/
   - Executed `npm install` and verified `npm audit` returned `found 0 vulnerabilities`.
 - **Current File Structure Changes:**
   - `[MODIFIED]` `backend/package.json`, `backend/package-lock.json`
+
+### 19. Implemented Dynamic Hostname Detection for API base URL
+- **What happened:** Fixed a "Failed to fetch" connection issue on mobile devices. When deployed to GitHub Pages, the site was compiled using a local `http://localhost:5000/api` base URL configuration, which fails on mobile browsers.
+- **Changes in Frontend:**
+  - Updated `src/lib/api.ts` to dynamically detect the current browser hostname.
+  - If the site is visited from `localhost`, `127.0.0.1`, or a local network IP (`192.168.*`), it fallback-routes to the local API development server.
+  - Otherwise (production domains), it dynamically routes API requests to your production backend server (`https://tss1-production.up.railway.app/api`).
+- **Current File Structure Changes:**
+  - `[MODIFIED]` `src/lib/api.ts`
