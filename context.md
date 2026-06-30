@@ -201,3 +201,12 @@ g:/TSS/src/
   - Added `NextFunction` and `fs` imports to `server.ts`.
 - **Current File Structure Changes:**
   - `[MODIFIED]` `backend/src/server.ts`
+
+### 21. Diagnosed Railway ERR_EMPTY_RESPONSE — ISP DNS Blocking Confirmed
+- **What happened:** Backend appeared unreachable from any network except home Wi-Fi. Ran a full 3-point diagnostic.
+- **Diagnostic Results:**
+  - ✅ Issue 1 (Frontend calling localhost): **Not a problem** — `api.ts` dynamically detects hostname at runtime, only uses `localhost:5000` in local dev.
+  - ✅ Issue 2 (Appending `:5000` to Railway URL): **Not a problem** — production URL is `https://tss1-production.up.railway.app/api` (no port).
+  - ❌ Issue 3 (ISP DNS blocking): **ROOT CAUSE CONFIRMED** — `nslookup` against ISP DNS (`10.121.89.56`) returns `Query refused` for `railway.app` domains. Google DNS (`8.8.8.8`) resolves correctly to `69.46.46.50`. Direct IP connection to `69.46.46.50/api/health` returns `{"status":"ok"}`.
+- **Solutions:** Change device DNS to `8.8.8.8` / `1.1.1.1` (quick fix) or buy a custom domain and link to Railway (permanent fix for all users).
+
