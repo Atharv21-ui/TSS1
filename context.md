@@ -219,3 +219,11 @@ g:/TSS/src/
 - **Current File Structure Changes:**
   - `[MODIFIED]` `backend/src/server.ts`, `backend/src/middleware/auth.ts`, `backend/package.json`
 
+### 23. Fixed GitHub Secret Scanning Alert (Leaked API Key)
+- **What happened:** GitHub flagged a leaked Google API Key (Firebase) inside the `.github/workflows/deploy.yml` file.
+- **Changes made:**
+  - Removed the hardcoded `VITE_FIREBASE_API_KEY` string from the workflow file.
+  - Replaced it with a secure GitHub Actions Secret reference (`${{ secrets.VITE_FIREBASE_API_KEY }}`).
+- **Current File Structure Changes:**
+  - `[MODIFIED]` `.github/workflows/deploy.yml`
+
