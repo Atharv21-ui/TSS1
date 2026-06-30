@@ -2,6 +2,7 @@ import { Router, Response } from 'express';
 import { usersCollection, IUser } from '../models/User';
 import { authenticateToken, requireAdmin, AuthRequest } from '../middleware/auth';
 import { FieldValue } from 'firebase-admin/firestore';
+import { sanitizeString } from '../utils/sanitize';
 
 const router = Router();
 
@@ -63,7 +64,12 @@ router.patch('/:id/ban', authenticateToken, requireAdmin, async (req: AuthReques
 // Update user payment info (Self)
 router.patch('/me/payment', authenticateToken, async (req: AuthRequest, res: Response) => {
   try {
-    const { cardNumber, expiry } = req.body;
+    const cardNumber = sanitizeString(req.body.cardNumber, 20);
+    const expiry = sanitizeString(req.body.expiry, 7);
+    
+    if (!cardNumber || !expiry) {
+      return res.status(400).json({ message: 'Card number and expiry are required' });
+    }
     
     if (!req.user) {
       return res.status(401).json({ message: 'Unauthorized' });

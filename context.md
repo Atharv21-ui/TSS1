@@ -227,3 +227,15 @@ g:/TSS/src/
 - **Current File Structure Changes:**
   - `[MODIFIED]` `.github/workflows/deploy.yml`
 
+### 24. E-Commerce Security Audit & Vulnerability Mitigations
+- **What happened:** Audited the backend APIs for IDOR (Broken Object-Level Authorization), Business Logic Flaws (like negative numbers/quantities), Cross-Site Scripting (XSS), and NoSQL Injection.
+- **Changes in Backend:**
+  - **Sanitization Helpers**: Created `backend/src/utils/sanitize.ts` to implement HTML escaping (`escapeHTML`), string sanitization (`sanitizeString`), email validation (`sanitizeEmail`), positive number validation (`sanitizePositiveNumber`), and price validation (`sanitizePrice`).
+  - **NoSQL & XSS Protection**: Integrated these sanitization helpers into `/sync` (auth), `/me/payment` (users), and catalog endpoints (products POST/PUT/PATCH) to ensure all incoming data is type-coerced, validated, and escaped before saving to Firestore.
+  - **Business Logic Enforcements**: Added constraints to ensure that stock levels and prices cannot be modified to negative values or invalid formats.
+  - **IDOR Check**: Confirmed that all write operations, product catalog operations, and role modifications are correctly authorization-gated behind Firebase Admin token checks and server-side role resolution (non-admins cannot bypass constraints).
+- **Current File Structure Changes:**
+  - `[NEW]` `backend/src/utils/sanitize.ts`
+  - `[MODIFIED]` `backend/src/routes/auth.ts`, `backend/src/routes/users.ts`, `backend/src/routes/products.ts`
+
+

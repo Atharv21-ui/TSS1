@@ -2,6 +2,7 @@ import { Router, Request, Response } from 'express';
 import { usersCollection, IUser } from '../models/User';
 import { authenticateToken, AuthRequest } from '../middleware/auth';
 import { FieldValue } from 'firebase-admin/firestore';
+import { sanitizeEmail, sanitizeString } from '../utils/sanitize';
 
 const router = Router();
 
@@ -13,7 +14,14 @@ router.post('/sync', authenticateToken, async (req: AuthRequest, res: Response) 
       return res.status(401).json({ message: 'Unauthorized' });
     }
 
-    const { email, name, address } = req.body;
+    const email = sanitizeEmail(req.body.email);
+    const name = sanitizeString(req.body.name, 100);
+    const address = sanitizeString(req.body.address, 500);
+    
+    if (!email) {
+      return res.status(400).json({ message: 'Valid email is required' });
+    }
+    
     const uid = req.user.id;
     
     const docRef = usersCollection.doc(uid);

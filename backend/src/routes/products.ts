@@ -3,6 +3,7 @@ import { productsCollection, IProduct } from '../models/Product';
 import { authenticateToken, requireAdmin, AuthRequest } from '../middleware/auth';
 import { upload } from '../middleware/upload';
 import { FieldValue, Query } from 'firebase-admin/firestore';
+import { sanitizeString, sanitizePositiveNumber, sanitizePrice } from '../utils/sanitize';
 
 const router = Router();
 
@@ -52,7 +53,15 @@ router.get('/:id', async (req: Request, res: Response) => {
 // Create product (Admin Only)
 router.post('/', authenticateToken, requireAdmin, upload.single('image'), async (req: AuthRequest, res: Response) => {
   try {
-    const { title, price, badge, description, category, stock } = req.body;
+    const title = sanitizeString(req.body.title, 200);
+    const category = sanitizeString(req.body.category, 100);
+    const badge = sanitizeString(req.body.badge, 50);
+    const description = sanitizeString(req.body.description, 2000);
+    
+    // Enforce positive price and stock values (Business Logic validation)
+    const price = sanitizePrice(req.body.price);
+    const stock = sanitizePositiveNumber(req.body.stock, 0);
+
     let { src, specs } = req.body;
 
     if (!title || !price || !category) {
@@ -101,7 +110,15 @@ router.post('/', authenticateToken, requireAdmin, upload.single('image'), async 
 // Update product (Admin Only)
 router.put('/:id', authenticateToken, requireAdmin, upload.single('image'), async (req: AuthRequest, res: Response) => {
   try {
-    const { title, price, badge, description, category, stock } = req.body;
+    const title = req.body.title !== undefined ? sanitizeString(req.body.title, 200) : undefined;
+    const category = req.body.category !== undefined ? sanitizeString(req.body.category, 100) : undefined;
+    const badge = req.body.badge !== undefined ? sanitizeString(req.body.badge, 50) : undefined;
+    const description = req.body.description !== undefined ? sanitizeString(req.body.description, 2000) : undefined;
+    
+    // Validate positive value updates
+    const price = req.body.price !== undefined ? sanitizePrice(req.body.price) : undefined;
+    const stock = req.body.stock !== undefined ? sanitizePositiveNumber(req.body.stock, 0) : undefined;
+
     let { src, specs } = req.body;
 
     const docRef = productsCollection.doc(req.params.id as string);
@@ -129,13 +146,13 @@ router.put('/:id', authenticateToken, requireAdmin, upload.single('image'), asyn
     }
 
     const updates: Partial<IProduct> = { updatedAt: FieldValue.serverTimestamp() };
-    if (title) updates.title = title;
-    if (price) updates.price = price;
-    if (src) updates.src = src;
+    if (title !== undefined) updates.title = title;
+    if (price !== undefined) updates.price = price;
+    if (src !== undefined) updates.src = src;
     if (badge !== undefined) updates.badge = badge;
     if (description !== undefined) updates.description = description;
-    if (category) updates.category = category.toLowerCase();
-    if (stock !== undefined) updates.stock = Number(stock);
+    if (category !== undefined) updates.category = category.toLowerCase();
+    if (stock !== undefined) updates.stock = stock;
     updates.specs = parsedSpecs;
 
     await docRef.update(updates as any);
@@ -166,10 +183,10 @@ router.delete('/:id', authenticateToken, requireAdmin, async (req: AuthRequest, 
 // Quick Stock / Inventory Update (Admin Only)
 router.patch('/:id/stock', authenticateToken, requireAdmin, async (req: AuthRequest, res: Response) => {
   try {
-    const { stock } = req.body;
+    const stock = sanitizePositiveNumber(req.body.stock, -1);
 
-    if (stock === undefined || isNaN(Number(stock))) {
-      return res.status(400).json({ message: 'Valid stock value is required' });
+    if (stock === -1) {
+      return res.status(400).json({ message: 'Valid non-negative stock value is required' });
     }
 
     const docRef = productsCollection.doc(req.params.id as string);
@@ -179,11 +196,11 @@ router.patch('/:id/stock', authenticateToken, requireAdmin, async (req: AuthRequ
     }
 
     await docRef.update({ 
-      stock: Number(stock),
+      stock: stock,
       updatedAt: FieldValue.serverTimestamp() 
     });
 
-    res.json({ _id: docRef.id, id: docRef.id, stock: Number(stock), message: 'Stock updated successfully' });
+    res.json({ _id: docRef.id, id: docRef.id, stock: stock, message: 'Stock updated successfully' });
   } catch (error: any) {
     res.status(500).json({ message: 'Error updating product stock', error: error.message });
   }
