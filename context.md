@@ -222,8 +222,8 @@ g:/TSS/src/
 ### 23. Fixed GitHub Secret Scanning Alert (Leaked API Key)
 - **What happened:** GitHub flagged a leaked Google API Key (Firebase) inside the `.github/workflows/deploy.yml` file.
 - **Changes made:**
-  - Removed the hardcoded `VITE_FIREBASE_API_KEY` string from the workflow file.
-  - Replaced it with a secure GitHub Actions Secret reference (`${{ secrets.VITE_FIREBASE_API_KEY }}`).
+  - Removed all hardcoded `VITE_*` environment variables from the workflow file to maximize security.
+  - Replaced them with secure GitHub Actions Secret references (e.g., `${{ secrets.VITE_FIREBASE_API_KEY }}`).
 - **Current File Structure Changes:**
   - `[MODIFIED]` `.github/workflows/deploy.yml`
 
