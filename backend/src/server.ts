@@ -1,4 +1,5 @@
-import express, { Request, Response } from 'express';
+import express, { Request, Response, NextFunction } from 'express';
+import fs from 'fs';
 import path from 'path';
 import cors from 'cors';
 import dotenv from 'dotenv';
@@ -391,11 +392,19 @@ const seedDatabase = async () => {
   }
 };
 
-// Serve frontend static files in production
-app.use(express.static(path.join(__dirname, '../../dist')));
+// Serve frontend static files in production (only if dist exists)
+const distPath = path.join(__dirname, '../../dist');
+if (fs.existsSync(distPath)) {
+  app.use(express.static(distPath));
+  app.get('{*splat}', (req: Request, res: Response) => {
+    res.sendFile(path.join(distPath, 'index.html'));
+  });
+}
 
-app.get(/(.*)/, (req: Request, res: Response) => {
-  res.sendFile(path.join(__dirname, '../../dist/index.html'));
+// Global error handler to prevent silent crashes
+app.use((err: any, req: Request, res: Response, next: NextFunction) => {
+  console.error('Unhandled error:', err);
+  res.status(500).json({ message: 'Internal server error', error: err.message });
 });
 
 // Start Server
