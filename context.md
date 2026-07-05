@@ -254,4 +254,13 @@ g:/TSS/src/
   - Integrated `IntroScroll` into `src/pages/Home.tsx` and tracked completion state via `sessionStorage` (`tss_intro_shown`). When complete, the overlay fades out, and the Home page smoothly transitions in.
 - **Current File Structure Changes:**
   - `[NEW]` `public/intro/` (63 frames), `src/components/IntroScroll.tsx`
-  - `[MODIFIED]` `src/pages/Home.tsx`, `src/index.css`
+- `[MODIFIED]` `src/pages/Home.tsx`, `src/index.css`
+
+### 27. Mobile Intro Sequence & Layout Fixes
+- **What happened:** The user provided a 53-frame mobile-optimized JPG sequence. Also, the Engineering bento-grid on the `Home` page had a bug on small screens where text would overlap the absolutely-positioned hardware icons.
+- **Changes in Frontend:**
+  - **Mobile Intro**: Copied mobile frames to `public/mob_intro/`. Updated `IntroScroll.tsx` to detect window width (`< 768px`) and conditionally load the 53-frame mobile sequence from `BASE_URL + mob_intro/` or the 63-frame desktop sequence.
+  - **Bento Grid Layout Bug**: Removed `position: absolute` from `.bento-icon` in `App.css`. Switched the `.bento-item` to use a native flexbox column layout with `margin-bottom: auto` on the icon to push text to the bottom. This prevents text overlap while maintaining exact design fidelity.
+- **Current File Structure Changes:**
+  - `[NEW]` `public/mob_intro/` (53 frames)
+  - `[MODIFIED]` `src/components/IntroScroll.tsx`, `src/App.css`
