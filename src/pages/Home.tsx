@@ -5,6 +5,7 @@ import { Link } from 'react-router-dom';
 import AnimatedButton from '../components/AnimatedButton';
 import { TracingBeam } from '../components/ui/tracing-beam';
 import StoreInfo from '../components/StoreInfo';
+import IntroScroll from '../components/IntroScroll';
 
 type Colorway = {
   id: string;
@@ -39,6 +40,15 @@ const colors: Colorway[] = [
 ];
 
 export default function Home() {
+  const [introFinished, setIntroFinished] = useState(() => {
+    return sessionStorage.getItem('tss_intro_shown') === 'true';
+  });
+
+  const handleIntroComplete = () => {
+    sessionStorage.setItem('tss_intro_shown', 'true');
+    setIntroFinished(true);
+  };
+
   const [activeColorIndex, setActiveColorIndex] = useState(0);
   const activeColor = colors[activeColorIndex];
   
@@ -93,7 +103,23 @@ export default function Home() {
 
   return (
     <>
-      {/* 1. HERO SECTION (100vh) */}
+      {!introFinished && <IntroScroll onComplete={handleIntroComplete} />}
+      
+      <div 
+        className="home-main-content"
+        style={{
+          opacity: introFinished ? 1 : 0,
+          pointerEvents: introFinished ? 'auto' : 'none',
+          position: introFinished ? 'relative' : 'fixed',
+          top: 0,
+          left: 0,
+          width: '100%',
+          height: introFinished ? 'auto' : '100vh',
+          overflow: introFinished ? 'visible' : 'hidden',
+          transition: 'opacity 0.8s ease'
+        }}
+      >
+        {/* 1. HERO SECTION (100vh) */}
       <div className="hero-wrapper">
         {/* Placeholder to balance the flex space-between exactly like the old header did */}
         <div style={{ height: '32px' }}></div>
@@ -247,6 +273,7 @@ export default function Home() {
         {/* STORE INFO & REVIEWS */}
         <StoreInfo />
       </TracingBeam>
+      </div>
     </>
   );
 }

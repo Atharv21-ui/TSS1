@@ -246,5 +246,12 @@ g:/TSS/src/
 - **Current File Structure Changes:**
   - `[MODIFIED]` `src/main.tsx`
 
-
-
+### 26. Built GSAP Intro Image Sequence Animation
+- **What happened:** The user dropped a 63-frame JPG sequence for a high-end intro animation. We copied the frames to `public/intro` and implemented a beautiful, performant `IntroScroll` component that preloads the images (with a cyberpunk progress loader), uses a full-screen `<canvas>` for rendering, and scrubs the frames based on scroll position using `gsap/ScrollTrigger`.
+- **Changes in Frontend:**
+  - Added `src/components/IntroScroll.tsx`.
+  - Added CSS classes for preloader and HUD to `src/index.css`.
+  - Integrated `IntroScroll` into `src/pages/Home.tsx` and tracked completion state via `sessionStorage` (`tss_intro_shown`). When complete, the overlay fades out, and the Home page smoothly transitions in.
+- **Current File Structure Changes:**
+  - `[NEW]` `public/intro/` (63 frames), `src/components/IntroScroll.tsx`
+  - `[MODIFIED]` `src/pages/Home.tsx`, `src/index.css`

@@ -496,10 +496,10 @@
   padding: 40px;
   display: flex;
   flex-direction: column;
-  justify-content: flex-end;
   position: relative;
   overflow: hidden;
   transition: all 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+  gap: 20px;
 }
 
 /* Inner Radial Glow Overlay */
@@ -539,9 +539,7 @@
 }
 
 .bento-icon {
-  position: absolute;
-  top: 40px;
-  left: 40px;
+  margin-bottom: auto;
   color: var(--accent-color);
   transition: color 0.6s ease;
 }

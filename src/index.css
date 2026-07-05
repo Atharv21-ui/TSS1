@@ -68,3 +68,199 @@ button {
   cursor: pointer;
   outline: none;
 }
+
+/* Intro Scroll Animation Styles */
+.intro-scroll-container {
+  position: relative;
+  width: 100%;
+}
+
+.intro-pinned-section {
+  position: relative;
+  width: 100%;
+  height: 100vh;
+  overflow: hidden;
+  background: #000;
+}
+
+.intro-canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+}
+
+/* Preloader */
+.intro-preloader {
+  position: fixed;
+  inset: 0;
+  background: #050505;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+}
+
+.preloader-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  width: 100%;
+  max-width: 400px;
+}
+
+.preloader-title {
+  color: #fff;
+  letter-spacing: 6px;
+  text-shadow: 0 0 10px rgba(255, 0, 0, 0.5);
+}
+
+.preloader-bar-container {
+  width: 100%;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 2px;
+  overflow: hidden;
+  position: relative;
+}
+
+.preloader-bar {
+  height: 100%;
+  background: var(--accent-color);
+  box-shadow: 0 0 10px var(--accent-color);
+  transition: width 0.1s linear;
+}
+
+.preloader-details {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  font-size: 10px;
+  letter-spacing: 2px;
+  color: var(--text-muted);
+}
+
+/* HUD Overlay */
+.hud-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  pointer-events: none;
+  padding: 40px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.hud-element {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.hud-element.top-left { top: 40px; left: 40px; }
+.hud-element.top-right { top: 40px; right: 40px; }
+.hud-element.bottom-left { bottom: 40px; left: 40px; }
+.hud-element.bottom-right { bottom: 40px; right: 40px; }
+
+.hud-text {
+  display: flex;
+  flex-direction: column;
+  font-size: 10px;
+  letter-spacing: 2px;
+  font-family: var(--font-ui);
+}
+
+.hud-text .label {
+  color: var(--text-muted);
+}
+
+.hud-text .value {
+  color: #fff;
+  font-weight: bold;
+}
+
+.hud-center {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 30px;
+}
+
+.hud-main-text {
+  font-size: 18px;
+  letter-spacing: 8px;
+  color: #fff;
+  text-shadow: 0 0 20px rgba(255, 255, 255, 0.5);
+  text-align: center;
+}
+
+.hud-progress-ring {
+  width: 100px;
+  height: 100px;
+  position: relative;
+}
+
+.hud-progress-ring svg {
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
+}
+
+.ring-bg {
+  fill: none;
+  stroke: rgba(255, 255, 255, 0.1);
+  stroke-width: 2;
+}
+
+.ring-fill {
+  fill: none;
+  stroke: var(--accent-color);
+  stroke-width: 2;
+  transition: stroke-dashoffset 0.1s linear;
+}
+
+.scroll-indicator {
+  position: absolute;
+  bottom: 40px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 15px;
+  font-size: 10px;
+  letter-spacing: 4px;
+  color: #fff;
+}
+
+.scroll-line {
+  width: 1px;
+  height: 40px;
+  background: linear-gradient(to bottom, var(--accent-color), transparent);
+  animation: pulse-scroll 1.5s infinite;
+}
+
+@keyframes pulse-scroll {
+  0% { transform: scaleY(0); transform-origin: top; opacity: 0; }
+  50% { transform: scaleY(1); transform-origin: top; opacity: 1; }
+  50.1% { transform: scaleY(1); transform-origin: bottom; opacity: 1; }
+  100% { transform: scaleY(0); transform-origin: bottom; opacity: 0; }
+}
+
+@media (max-width: 768px) {
+  .hud-overlay { padding: 20px; }
+  .hud-element.top-left { top: 20px; left: 20px; }
+  .hud-element.top-right { top: 20px; right: 20px; }
+  .hud-element.bottom-left { bottom: 20px; left: 20px; }
+  .hud-element.bottom-right { bottom: 20px; right: 20px; }
+  .hud-main-text { font-size: 14px; letter-spacing: 4px; }
+}
