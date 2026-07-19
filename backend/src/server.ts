@@ -49,7 +49,8 @@ app.use(cors({
       origin.endsWith('.netlify.app') || 
       origin.endsWith('.railway.app') || 
       origin.endsWith('.github.io') ||
-      origin === 'https://atharv21-ui.github.io'
+      origin === 'https://atharv21-ui.github.io' ||
+      origin.endsWith('tsscomputer.in')
     ) {
       callback(null, true);
     } else {

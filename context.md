@@ -272,3 +272,14 @@ g:/TSS/src/
   - **Router:** Switched from `HashRouter` to `BrowserRouter` in `src/main.tsx`.
 - **Current File Structure Changes:**
   - `[MODIFIED]` `vite.config.ts`, `src/main.tsx`
+
+### 29. Dynamic Environments for GitHub Pages & Netlify + CORS Update
+- **What happened:** To support both Netlify (`tsscomputer.in`) and GitHub Pages (`atharv21-ui.github.io/TSS1/`) dynamically, we automated configuration detection for Vite build bases and routing. We also enabled backend support for the new custom domain.
+- **Changes in Frontend:**
+  - **Vite Config:** Configured `base` in `vite.config.ts` to detect `process.env.GITHUB_ACTIONS === 'true'` (sets `/TSS1/` for GitHub Actions, `/` for Netlify/local).
+  - **Router:** Updated `src/main.tsx` to dynamically switch to `HashRouter` if the hostname matches `*.github.io`, otherwise use `BrowserRouter`.
+- **Changes in Backend:**
+  - **CORS Config:** Updated `backend/src/server.ts` to allow origins ending in `tsscomputer.in` (such as the main domain and www subdomain) to communicate with the Railway backend.
+- **Current File Structure Changes:**
+  - `[MODIFIED]` `vite.config.ts`, `src/main.tsx`, `backend/src/server.ts`
+

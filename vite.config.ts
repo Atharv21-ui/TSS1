@@ -8,7 +8,7 @@ export default defineConfig({
     react(),
     tailwindcss(),
   ],
-  base: '/', // Required for root domain hosting on Netlify
+  base: process.env.GITHUB_ACTIONS === 'true' ? '/TSS1/' : '/', // Use subpath for GitHub Pages, root for Netlify/local
   server: {
     host: true, // Allow mobile network access
     proxy: {
