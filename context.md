@@ -264,3 +264,11 @@ g:/TSS/src/
 - **Current File Structure Changes:**
   - `[NEW]` `public/mob_intro/` (53 frames)
   - `[MODIFIED]` `src/components/IntroScroll.tsx`, `src/App.css`
+
+### 28. Netlify Deployment Configuration (White Page Fix)
+- **What happened:** The site was deployed to a root domain (`tsscomputer.in`) via Netlify, resulting in a blank white page because the Vite `base` URL was still configured for GitHub Pages (`/TSS1/`). We updated the base URL to `/` and switched the routing back to `BrowserRouter` for cleaner URLs since Netlify supports SPA routing via the `_redirects` file we created earlier.
+- **Changes in Frontend:**
+  - **Vite Config:** Changed `base: '/TSS1/'` to `base: '/'` in `vite.config.ts`.
+  - **Router:** Switched from `HashRouter` to `BrowserRouter` in `src/main.tsx`.
+- **Current File Structure Changes:**
+  - `[MODIFIED]` `vite.config.ts`, `src/main.tsx`

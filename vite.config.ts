@@ -8,7 +8,7 @@ export default defineConfig({
     react(),
     tailwindcss(),
   ],
-  base: '/TSS1/', // Required for GitHub Pages hosting
+  base: '/', // Required for root domain hosting on Netlify
   server: {
     host: true, // Allow mobile network access
     proxy: {
