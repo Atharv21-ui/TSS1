@@ -24,7 +24,8 @@
     "firebase-admin": "^14.1.0",
     "jsonwebtoken": "^9.0.3",
     "multer": "^2.2.0",
-    "multer-storage-cloudinary": "^4.0.0"
+    "multer-storage-cloudinary": "^4.0.0",
+    "razorpay": "^2.9.8"
   },
   "overrides": {
     "cloudinary": "^2.10.0",

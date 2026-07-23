@@ -5,14 +5,13 @@ import { MultiStepLoader } from '../components/ui/multi-step-loader';
 import AnimatedButton from '../components/AnimatedButton';
 import ArrowButton from '../components/ArrowButton';
 import FloatingInput from '../components/FloatingInput';
-import { CheckCircle, ShieldCheck, CreditCard, Trash2, Wallet, Banknote, Smartphone } from 'lucide-react';
+import { CheckCircle, ShieldCheck, Trash2, Shield, CreditCard, Smartphone, Building } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { api } from '../lib/api';
 
 const loadingStates = [
-  { text: "Securing connection..." },
-  { text: "Authenticating user details..." },
-  { text: "Processing encrypted payment..." },
+  { text: "Securing Razorpay tunnel..." },
+  { text: "Verifying encrypted payment signature..." },
   { text: "Allocating global inventory..." },
   { text: "Configuring system specs..." },
   { text: "Preparing shipping manifest..." },
@@ -25,12 +24,11 @@ export default function Checkout() {
   const [orderComplete, setOrderComplete] = useState(false);
   
   const [user, setUser] = useState<any>(null);
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
   const [address, setAddress] = useState('');
-  const [paymentType, setPaymentType] = useState<'credit_card' | 'saved_card' | 'cod' | 'upi'>('credit_card');
-  const [cardNumber, setCardNumber] = useState('');
-  const [expiry, setExpiry] = useState('');
-  const [cvc, setCvc] = useState('');
-  const [upiId, setUpiId] = useState('');
+  const [city, setCity] = useState('');
+  const [postalCode, setPostalCode] = useState('');
 
   useEffect(() => {
     // Set accent color for Checkout
@@ -50,11 +48,13 @@ export default function Checkout() {
       try {
         const profile: any = await api.get('/auth/me');
         setUser(profile);
+        if (profile.name) {
+          const parts = profile.name.split(' ');
+          setFirstName(parts[0] || '');
+          setLastName(parts.slice(1).join(' ') || '');
+        }
         if (profile.address) {
           setAddress(profile.address);
-        }
-        if (profile.savedPaymentMethod) {
-          setPaymentType('saved_card');
         }
       } catch (err) {}
     };
@@ -64,16 +64,74 @@ export default function Checkout() {
   const handlePlaceOrder = async (e: React.FormEvent) => {
     e.preventDefault();
     if (cartItems.length === 0) return;
-    
-    if (paymentType === 'credit_card' && user) {
-      try {
-        await api.patch('/users/me/payment', { cardNumber, expiry });
-      } catch (err) {
-        console.error('Failed to save payment method', err);
-      }
-    }
 
-    setLoading(true);
+    try {
+      // 1. Create order on backend via Razorpay
+      const orderRes: any = await api.post('/payments/create-order', {
+        amount: cartTotal
+      });
+
+      if (!orderRes.success) {
+        alert('Failed to initialize Razorpay payment session.');
+        return;
+      }
+
+      const { order_id, amount, currency, key_id } = orderRes;
+
+      // 2. Setup Razorpay Checkout Modal
+      const options = {
+        key: key_id,
+        amount: amount,
+        currency: currency,
+        name: 'TSS COMPUTERS',
+        description: 'High Performance Hardware Order',
+        image: '/favicon.svg',
+        order_id: order_id,
+        prefill: {
+          name: `${firstName} ${lastName}`.trim() || user?.name || '',
+          email: user?.email || '',
+        },
+        theme: {
+          color: '#39C3EF',
+        },
+        handler: async function (response: any) {
+          try {
+            setLoading(true);
+            const verifyRes: any = await api.post('/payments/verify', {
+              razorpay_order_id: response.razorpay_order_id,
+              razorpay_payment_id: response.razorpay_payment_id,
+              razorpay_signature: response.razorpay_signature,
+            });
+
+            if (verifyRes.success) {
+              // MultiStepLoader handles transition to complete state
+            } else {
+              setLoading(false);
+              alert('Payment verification failed.');
+            }
+          } catch (err) {
+            console.error('Verification error:', err);
+            setLoading(false);
+            alert('Payment verification error.');
+          }
+        },
+        modal: {
+          ondismiss: function () {
+            console.log('Payment modal closed');
+          },
+        },
+      };
+
+      if ((window as any).Razorpay) {
+        const rzp = new (window as any).Razorpay(options);
+        rzp.open();
+      } else {
+        alert('Razorpay SDK failed to load. Please refresh and check your internet connection.');
+      }
+    } catch (err: any) {
+      console.error('Checkout error:', err);
+      alert(err.message || 'Error initializing payment.');
+    }
   };
 
   const handleLoaderComplete = () => {
@@ -88,7 +146,7 @@ export default function Checkout() {
         <CheckCircle size={80} color="var(--accent-color)" style={{ marginBottom: '30px' }} />
         <h1 className="font-heading" style={{ fontSize: '4rem', textTransform: 'uppercase', marginBottom: '20px' }}>ORDER SECURED</h1>
         <p className="text-muted" style={{ maxWidth: '600px', lineHeight: '1.6', marginBottom: '40px' }}>
-          Your high-performance hardware is being provisioned. A confirmation email with encrypted tracking details has been sent to your inbox.
+          Your high-performance hardware has been provisioned and paid via Razorpay. A confirmation email with tracking details has been sent to your inbox.
         </p>
         <Link to="/" style={{ textDecoration: 'none' }}>
           <ArrowButton text="RETURN TO SECURE TERMINAL" />
@@ -103,7 +161,7 @@ export default function Checkout() {
         <h1 className="font-heading" style={{ fontSize: '4rem', textTransform: 'uppercase' }}>CHECKOUT</h1>
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginTop: '10px' }}>
           <ShieldCheck size={20} color="var(--accent-color)" />
-          <span className="text-muted" style={{ fontSize: '12px', letterSpacing: '2px', textTransform: 'uppercase' }}>256-bit Encrypted Session</span>
+          <span className="text-muted" style={{ fontSize: '12px', letterSpacing: '2px', textTransform: 'uppercase' }}>Razorpay 256-bit Encrypted Session</span>
         </div>
       </div>
 
@@ -130,7 +188,9 @@ export default function Checkout() {
                     <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>QTY: {item.quantity}</span>
                   </div>
                   <div style={{ textAlign: 'right' }}>
-                    <p style={{ color: 'var(--accent-color)', fontWeight: 'bold', margin: 0 }}>{item.price}</p>
+                    <p style={{ color: 'var(--accent-color)', fontWeight: 'bold', margin: 0 }}>
+                      {item.price.includes('₹') ? item.price : `₹${item.price}`}
+                    </p>
                     <button 
                       onClick={() => removeFromCart(item.id)}
                       style={{ background: 'none', border: 'none', color: '#666', cursor: 'pointer', marginTop: '5px' }}
@@ -145,15 +205,15 @@ export default function Checkout() {
             <div style={{ marginTop: '40px', borderTop: '1px solid #333', paddingTop: '20px' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px' }}>
                 <span className="text-muted">Subtotal</span>
-                <span>${cartTotal.toLocaleString()}</span>
+                <span>₹{cartTotal.toLocaleString()}</span>
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px' }}>
-                <span className="text-muted">Encrypted Shipping</span>
-                <span>$0.00</span>
+                <span className="text-muted">Express Shipping</span>
+                <span>₹0.00</span>
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '20px', fontSize: '1.5rem', fontWeight: 'bold' }}>
                 <span className="font-heading">TOTAL</span>
-                <span style={{ color: 'var(--accent-color)' }}>${cartTotal.toLocaleString()}</span>
+                <span style={{ color: 'var(--accent-color)' }}>₹{cartTotal.toLocaleString()}</span>
               </div>
             </div>
           </div>
@@ -164,81 +224,37 @@ export default function Checkout() {
             <div style={{ background: '#111', padding: '30px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.05)' }}>
               <h3 className="font-heading" style={{ fontSize: '1.2rem', marginBottom: '20px' }}>1. SHIPPING LOGISTICS</h3>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginBottom: '20px' }}>
-                <FloatingInput label="First Name" required type="text" bgContext="#111" />
-                <FloatingInput label="Last Name" required type="text" bgContext="#111" />
+                <FloatingInput label="First Name" required type="text" value={firstName} onChange={(e) => setFirstName(e.target.value)} bgContext="#111" />
+                <FloatingInput label="Last Name" required type="text" value={lastName} onChange={(e) => setLastName(e.target.value)} bgContext="#111" />
               </div>
               <div style={{ marginBottom: '20px' }}>
                 <FloatingInput label="Delivery Address" required type="text" value={address} onChange={(e) => setAddress(e.target.value)} bgContext="#111" />
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '20px' }}>
-                <FloatingInput label="City" required type="text" bgContext="#111" />
-                <FloatingInput label="Postal Code" required type="text" bgContext="#111" />
+                <FloatingInput label="City" required type="text" value={city} onChange={(e) => setCity(e.target.value)} bgContext="#111" />
+                <FloatingInput label="Postal Code" required type="text" value={postalCode} onChange={(e) => setPostalCode(e.target.value)} bgContext="#111" />
               </div>
             </div>
 
             <div style={{ background: '#111', padding: '30px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.05)' }}>
-              <h3 className="font-heading" style={{ fontSize: '1.2rem', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '10px' }}>
-                2. PAYMENT CHANNEL <Wallet size={18} color="var(--accent-color)" />
+              <h3 className="font-heading" style={{ fontSize: '1.2rem', marginBottom: '15px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                2. PAY VIA RAZORPAY <Shield size={18} color="var(--accent-color)" />
               </h3>
 
-              <div style={{ display: 'flex', gap: '15px', marginBottom: '25px', flexWrap: 'wrap' }}>
-                {user?.savedPaymentMethod && (
-                  <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', color: paymentType === 'saved_card' ? 'var(--accent-color)' : '#999' }}>
-                    <input type="radio" name="paymentType" checked={paymentType === 'saved_card'} onChange={() => setPaymentType('saved_card')} style={{ accentColor: 'var(--accent-color)' }} />
-                    <CreditCard size={16} /> Saved Card
-                  </label>
-                )}
-                <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', color: paymentType === 'credit_card' ? 'var(--accent-color)' : '#999' }}>
-                  <input type="radio" name="paymentType" checked={paymentType === 'credit_card'} onChange={() => setPaymentType('credit_card')} style={{ accentColor: 'var(--accent-color)' }} />
-                  <CreditCard size={16} /> Credit Card
-                </label>
-                <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', color: paymentType === 'upi' ? 'var(--accent-color)' : '#999' }}>
-                  <input type="radio" name="paymentType" checked={paymentType === 'upi'} onChange={() => setPaymentType('upi')} style={{ accentColor: 'var(--accent-color)' }} />
-                  <Smartphone size={16} /> UPI
-                </label>
-                <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', color: paymentType === 'cod' ? 'var(--accent-color)' : '#999' }}>
-                  <input type="radio" name="paymentType" checked={paymentType === 'cod'} onChange={() => setPaymentType('cod')} style={{ accentColor: 'var(--accent-color)' }} />
-                  <Banknote size={16} /> Cash on Delivery
-                </label>
+              <div style={{ padding: '20px', background: 'rgba(57, 195, 239, 0.05)', border: '1px solid rgba(57, 195, 239, 0.2)', borderRadius: '8px' }}>
+                <p style={{ margin: '0 0 12px 0', color: '#fff', fontSize: '14px', fontWeight: '500' }}>
+                  Secure payment gateway supported modes:
+                </p>
+                <div style={{ display: 'flex', gap: '20px', color: 'var(--accent-color)', fontSize: '13px', flexWrap: 'wrap' }}>
+                  <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Smartphone size={16} /> UPI (GPay, PhonePe, Paytm)</span>
+                  <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><CreditCard size={16} /> Credit / Debit Cards</span>
+                  <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Building size={16} /> Net Banking & Wallets</span>
+                </div>
               </div>
-
-              {paymentType === 'saved_card' && user?.savedPaymentMethod && (
-                <div style={{ padding: '20px', background: 'rgba(57, 195, 239, 0.05)', border: '1px solid rgba(57, 195, 239, 0.2)', borderRadius: '8px' }}>
-                  <p style={{ margin: 0, color: 'var(--accent-color)', display: 'flex', alignItems: 'center', gap: '10px' }}>
-                    <CreditCard size={18} />
-                    •••• •••• •••• {user.savedPaymentMethod.cardNumber.slice(-4)} (Exp: {user.savedPaymentMethod.expiry})
-                  </p>
-                  <p style={{ fontSize: '12px', color: '#666', marginTop: '10px' }}>This payment method is securely saved in your profile.</p>
-                </div>
-              )}
-
-              {paymentType === 'credit_card' && (
-                <>
-                  <div style={{ marginBottom: '20px' }}>
-                    <FloatingInput label="Card Number" required type="text" pattern="[0-9]{16}" title="16 digit card number" value={cardNumber} onChange={(e) => setCardNumber(e.target.value)} bgContext="#111" />
-                  </div>
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
-                    <FloatingInput label="MM/YY" required type="text" pattern="(0[1-9]|1[0-2])\/[0-9]{2}" title="MM/YY" value={expiry} onChange={(e) => setExpiry(e.target.value)} bgContext="#111" />
-                    <FloatingInput label="CVC" required type="text" pattern="[0-9]{3,4}" title="3 or 4 digit CVC" value={cvc} onChange={(e) => setCvc(e.target.value)} bgContext="#111" />
-                  </div>
-                </>
-              )}
-
-              {paymentType === 'upi' && (
-                <div style={{ marginBottom: '20px' }}>
-                  <FloatingInput label="UPI ID (e.g. name@bank)" required type="text" value={upiId} onChange={(e) => setUpiId(e.target.value)} bgContext="#111" />
-                </div>
-              )}
-
-              {paymentType === 'cod' && (
-                <div style={{ padding: '15px', background: 'rgba(255,255,255,0.05)', borderRadius: '8px', color: '#999', fontSize: '13px' }}>
-                  Pay with cash or digital modes upon delivery.
-                </div>
-              )}
             </div>
 
             <button type="submit" style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', alignSelf: 'flex-end' }}>
-              <AnimatedButton text="INITIATE PROTOCOL" />
+              <AnimatedButton text="PAY WITH RAZORPAY" />
             </button>
           </form>
 
@@ -249,7 +265,7 @@ export default function Checkout() {
       <MultiStepLoader 
         loadingStates={loadingStates} 
         loading={loading} 
-        duration={2000} 
+        duration={1500} 
         onComplete={handleLoaderComplete}
       />
     </div>

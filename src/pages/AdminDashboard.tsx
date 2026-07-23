@@ -162,7 +162,7 @@ export default function AdminDashboard() {
       const formData = new FormData();
       
       formData.append('title', title);
-      formData.append('price', price.endsWith('$') ? price : `${price}$`);
+      formData.append('price', price.startsWith('₹') ? price : `₹${price}`);
       formData.append('category', category);
       formData.append('stock', String(parseInt(stock) || 0));
       
@@ -205,7 +205,7 @@ export default function AdminDashboard() {
   const handleEditInit = (product: Product) => {
     setEditingId(product._id);
     setTitle(product.title);
-    setPrice(product.price.replace('$', ''));
+    setPrice(product.price.replace('$', '').replace('₹', ''));
     setSrc(product.src);
     setImageFile(null);
     setBadge(product.badge || '');
@@ -388,7 +388,7 @@ export default function AdminDashboard() {
                 <div className="absolute top-0 right-0 w-24 h-24 bg-[#00ccff]/5 rounded-full blur-2xl group-hover:bg-[#00ccff]/10 transition-all" />
                 <div>
                   <p className="text-[10px] font-heading font-bold text-zinc-500 tracking-[0.2em] uppercase">Total Revenue</p>
-                  <h3 className="text-2xl font-heading font-bold text-white mt-1">${currentStats.sales.toLocaleString()}</h3>
+                  <h3 className="text-2xl font-heading font-bold text-white mt-1">₹{currentStats.sales.toLocaleString()}</h3>
                   <div className="flex items-center gap-1.5 text-emerald-400 text-[10px] font-heading font-semibold mt-2">
                     <span className="bg-emerald-500/10 px-1.5 py-0.5 rounded border border-emerald-500/20">+14.2%</span>
                     <span>VS PREV PERIOD</span>
@@ -436,7 +436,7 @@ export default function AdminDashboard() {
                 <div className="absolute top-0 right-0 w-24 h-24 bg-[#00ccff]/5 rounded-full blur-2xl group-hover:bg-[#00ccff]/10 transition-all" />
                 <div>
                   <p className="text-[10px] font-heading font-bold text-zinc-500 tracking-[0.2em] uppercase">Avg Order Value</p>
-                  <h3 className="text-2xl font-heading font-bold text-white mt-1">${currentStats.aov.toLocaleString()}</h3>
+                  <h3 className="text-2xl font-heading font-bold text-white mt-1">₹{currentStats.aov.toLocaleString()}</h3>
                   <div className="flex items-center gap-1.5 text-emerald-400 text-[10px] font-heading font-semibold mt-2">
                     <span className="bg-emerald-500/10 px-1.5 py-0.5 rounded border border-emerald-500/20">+4.5%</span>
                     <span>PER TRANSACTION</span>
@@ -586,7 +586,7 @@ export default function AdminDashboard() {
                               <div className="text-[10px] text-zinc-500">{order.email}</div>
                             </td>
                             <td className="p-4 text-zinc-400">{order.item}</td>
-                            <td className="p-4 font-mono text-[#00ccff] font-bold">${order.total.toLocaleString()}</td>
+                            <td className="p-4 font-mono text-[#00ccff] font-bold">₹{order.total.toLocaleString()}</td>
                             <td className="p-4">
                               <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-heading font-bold border ${
                                 order.status === 'Delivered' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' :

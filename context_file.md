@@ -193,3 +193,19 @@ g:/TSS/src/
   - Otherwise (production domains), it dynamically routes API requests to your production backend server (`https://tss1-production.up.railway.app/api`).
 - **Current File Structure Changes:**
   - `[MODIFIED]` `src/lib/api.ts`
+
+### 20. Integrated Razorpay Payment Gateway & Converted Currency to INR (₹)
+- **What happened:** Integrated Razorpay checkout flow end-to-end (Order Creation & HMAC-SHA256 Signature Verification) across backend & frontend, updated store currency to INR (₹), and embedded the Razorpay Checkout SDK.
+- **Changes in Backend:**
+  - Installed `razorpay` dependency (`npm install razorpay`).
+  - Added `backend/src/routes/payment.ts` featuring `POST /api/payments/create-order` (amount in paise) and `POST /api/payments/verify` (crypto HMAC SHA256 signature verification).
+  - Mounted `/api/payments` routes in `backend/src/server.ts`.
+  - Added `RAZORPAY_KEY_ID` and `RAZORPAY_KEY_SECRET` configuration variables to `backend/.env`.
+- **Changes in Frontend:**
+  - Added `<script src="https://checkout.razorpay.com/v1/checkout.js"></script>` SDK to `index.html`.
+  - Updated `src/pages/Checkout.tsx` to handle Razorpay checkout modal popup, send payment details to `/api/payments/verify`, and transition to order confirmation upon verification.
+  - Updated currency displays to Indian Rupees (`₹`) in `Checkout.tsx`, `Home.tsx`, `Warranty.tsx`, `Account.tsx`, and `AdminDashboard.tsx`.
+- **Current File Structure Changes:**
+  - `[NEW]` `backend/src/routes/payment.ts`
+  - `[MODIFIED]` `backend/package.json`, `backend/src/server.ts`, `backend/.env`, `index.html`, `src/pages/Checkout.tsx`, `src/pages/Home.tsx`, `src/pages/Warranty.tsx`, `src/pages/Account.tsx`, `src/pages/AdminDashboard.tsx`
+

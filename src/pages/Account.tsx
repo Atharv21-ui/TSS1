@@ -447,7 +447,7 @@ export default function Account() {
                     <span style={{ fontSize: '12px', color: '#00ff00' }}>● Delivered on 12.01.2025</span>
                   </div>
                   <div style={{ textAlign: 'right' }}>
-                    <div style={{ fontWeight: 'bold', marginBottom: '10px' }}>$1,499.00</div>
+                    <div style={{ fontWeight: 'bold', marginBottom: '10px' }}>₹1,24,999.00</div>
                     <AnimatedButton text="TRACK" className="outline-variant" onClick={() => handleTrackOrder('TSS-8892-X')} />
                   </div>
                 </div>
@@ -460,7 +460,7 @@ export default function Account() {
                     <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>● Delivered on 08.15.2025</span>
                   </div>
                   <div style={{ textAlign: 'right' }}>
-                    <div style={{ fontWeight: 'bold', marginBottom: '10px' }}>$199.00</div>
+                    <div style={{ fontWeight: 'bold', marginBottom: '10px' }}>₹14,999.00</div>
                     <AnimatedButton text="INVOICE" className="outline-variant" onClick={() => handleInvoice('TSS-7104-Y')} />
                   </div>
                 </div>

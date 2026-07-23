@@ -19,6 +19,7 @@ process.on('unhandledRejection', (err) => {
 import authRoutes from './routes/auth';
 import productRoutes from './routes/products';
 import usersRoutes from './routes/users';
+import paymentRoutes from './routes/payment';
 import { IUser } from './models/User';
 import { IProduct } from './models/Product';
 
@@ -77,6 +78,7 @@ app.use('/api', apiLimiter);
 app.use('/api/auth', authRoutes);
 app.use('/api/products', productRoutes);
 app.use('/api/users', usersRoutes);
+app.use('/api/payments', paymentRoutes);
 
 // Basic health check route
 app.get('/api/health', (req: Request, res: Response) => {

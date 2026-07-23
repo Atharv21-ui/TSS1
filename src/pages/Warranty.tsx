@@ -54,7 +54,7 @@ export default function Warranty() {
         <div className="warranty-card" style={{ background: '#111', padding: '40px', borderRadius: '12px', border: '1px solid var(--accent-color)', boxShadow: '0 0 20px rgba(0,85,255,0.1)', display: 'flex', flexDirection: 'column', alignItems: 'flex-start', transform: 'scale(1.05)', zIndex: 10 }}>
           <ShieldCheck size={48} color="var(--accent-color)" style={{ marginBottom: '20px' }} />
           <h3 className="font-heading" style={{ fontSize: '1.5rem', marginBottom: '10px' }}>PRO CARE</h3>
-          <h4 style={{ color: 'var(--accent-color)', marginBottom: '20px' }}>$199 (3 Years)</h4>
+          <h4 style={{ color: 'var(--accent-color)', marginBottom: '20px' }}>₹14,999 (3 Years)</h4>
           <p className="text-muted" style={{ lineHeight: '1.6', fontSize: '14px', flexGrow: 1 }}>
             Extended coverage designed for professionals who rely on their machines daily.
           </p>
@@ -70,7 +70,7 @@ export default function Warranty() {
         <div className="warranty-card" style={{ background: '#111', padding: '40px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.05)', display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
           <Shield size={48} color="var(--accent-color)" style={{ marginBottom: '20px' }} />
           <h3 className="font-heading" style={{ fontSize: '1.5rem', marginBottom: '10px' }}>ULTIMATE CARE</h3>
-          <h4 style={{ color: 'var(--accent-color)', marginBottom: '20px' }}>$399 (5 Years)</h4>
+          <h4 style={{ color: 'var(--accent-color)', marginBottom: '20px' }}>₹29,999 (5 Years)</h4>
           <p className="text-muted" style={{ lineHeight: '1.6', fontSize: '14px', flexGrow: 1 }}>
             Absolute peace of mind. White-glove service for enterprise and elite consumers.
           </p>

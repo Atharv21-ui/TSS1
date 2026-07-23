@@ -20,21 +20,21 @@ const colors: Colorway[] = [
     id: 'red',
     name: 'Crimson Red',
     hex: '#ff0000',
-    price: '1,299$',
+    price: '₹1,299',
     image: 'https://images.unsplash.com/photo-1593640408182-31c70c8268f5?auto=format&fit=crop&q=80&w=800'
   },
   {
     id: 'green',
     name: 'Neon Green',
     hex: '#00ff00',
-    price: '1,349$',
+    price: '₹1,349',
     image: 'https://images.unsplash.com/photo-1603302576837-37561b2e2302?auto=format&fit=crop&q=80&w=800'
   },
   {
     id: 'blue',
     name: 'Cyber Blue',
     hex: '#00ccff',
-    price: '1,499$',
+    price: '₹1,499',
     image: 'https://images.unsplash.com/photo-1525547719571-a2d4ac8945e2?auto=format&fit=crop&q=80&w=800'
   }
 ];
