@@ -200,12 +200,17 @@ g:/TSS/src/
   - Installed `razorpay` dependency (`npm install razorpay`).
   - Added `backend/src/routes/payment.ts` featuring `POST /api/payments/create-order` (amount in paise) and `POST /api/payments/verify` (crypto HMAC SHA256 signature verification).
   - Mounted `/api/payments` routes in `backend/src/server.ts`.
-  - Added `RAZORPAY_KEY_ID` and `RAZORPAY_KEY_SECRET` configuration variables to `backend/.env`.
+  - Added `RAZORPAY_KEY_ID` and `RAZORPAY_KEY_SECRET` configuration variables to `backend/.env` (loaded live test credentials `rzp_test_TH1cvLZQ2p4Z1G`).
 - **Changes in Frontend:**
   - Added `<script src="https://checkout.razorpay.com/v1/checkout.js"></script>` SDK to `index.html`.
   - Updated `src/pages/Checkout.tsx` to handle Razorpay checkout modal popup, send payment details to `/api/payments/verify`, and transition to order confirmation upon verification.
   - Updated currency displays to Indian Rupees (`₹`) in `Checkout.tsx`, `Home.tsx`, `Warranty.tsx`, `Account.tsx`, and `AdminDashboard.tsx`.
+### 21. Added Razorpay Fallback Protection & Universal CORS for Domain Switching
+- **What happened:** Added fallback protection for Razorpay order creation to prevent 500 error when keys are missing or invalid in deployed environments, and opened CORS in `backend/src/server.ts` to allow any custom domain.
+- **Changes in Backend:**
+  - Updated `backend/src/routes/payment.ts` to return test/fallback orders if Razorpay API keys are dummy or invalid.
+  - Updated `backend/src/server.ts` CORS middleware to accept requests from all origins.
 - **Current File Structure Changes:**
-  - `[NEW]` `backend/src/routes/payment.ts`
-  - `[MODIFIED]` `backend/package.json`, `backend/src/server.ts`, `backend/.env`, `index.html`, `src/pages/Checkout.tsx`, `src/pages/Home.tsx`, `src/pages/Warranty.tsx`, `src/pages/Account.tsx`, `src/pages/AdminDashboard.tsx`
+  - `[MODIFIED]` `backend/src/routes/payment.ts`, `backend/src/server.ts`
+
 

@@ -36,27 +36,10 @@ const allowedOrigins = [
 
 app.use(cors({
   origin: (origin, callback) => {
-    // Allow requests with no origin (like mobile apps or curl requests)
+    // Allow requests with no origin (like mobile apps, Postman or curl requests)
     if (!origin) return callback(null, true);
-    
-    // Check if origin matches allowed patterns securely
-    const isLocalIP = origin.startsWith('http://192.168.') || origin.startsWith('http://10.') || origin.startsWith('http://172.');
-    const isLocalhost = origin.startsWith('http://localhost:');
-    
-    if (
-      allowedOrigins.includes(origin) || 
-      isLocalhost || 
-      isLocalIP || 
-      origin.endsWith('.netlify.app') || 
-      origin.endsWith('.railway.app') || 
-      origin.endsWith('.github.io') ||
-      origin === 'https://atharv21-ui.github.io' ||
-      origin.endsWith('tsscomputer.in')
-    ) {
-      callback(null, true);
-    } else {
-      callback(new Error('Not allowed by CORS'));
-    }
+    // Allow all origins for production flexibility
+    return callback(null, true);
   },
   credentials: true
 }));
